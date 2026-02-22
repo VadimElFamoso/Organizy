@@ -5,6 +5,7 @@ from datetime import date
 from fastapi import APIRouter, Depends
 from sqlalchemy import case, distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.dependencies import get_current_user
@@ -161,11 +162,22 @@ async def _get_workout_summary(db: AsyncSession, user: User) -> WorkoutSummary:
 
     last_result = await db.execute(
         select(Workout)
+        .options(selectinload(Workout.exercises))
         .where(Workout.user_id == user.id)
         .order_by(Workout.workout_date.desc())
         .limit(1)
     )
-    last_workout = last_result.scalar_one_or_none()
+    last_workout = last_result.scalars().unique().one_or_none()
+
+    # Today's workouts
+    today = date.today()
+    today_result = await db.execute(
+        select(Workout)
+        .options(selectinload(Workout.exercises))
+        .where(Workout.user_id == user.id, Workout.workout_date == today)
+        .order_by(Workout.created_at.desc())
+    )
+    today_workouts = list(today_result.scalars().unique().all())
 
     streak = 0
     if total_workouts > 0:
@@ -195,4 +207,5 @@ async def _get_workout_summary(db: AsyncSession, user: User) -> WorkoutSummary:
         total_workouts=total_workouts,
         current_streak=streak,
         last_workout=last_workout,
+        today_workouts=today_workouts,
     )

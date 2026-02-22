@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +17,7 @@ import { useDailyTasks } from '@/composables/useDailyTasks'
 import AppNavbar from '@/components/layout/AppNavbar.vue'
 import CompletionLineChart from '@/components/daily-tasks/CompletionLineChart.vue'
 import CompletionTable from '@/components/daily-tasks/CompletionTable.vue'
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { DayStats } from '@/services/api'
 
 const router = useRouter()
@@ -41,20 +41,113 @@ const taskName = ref('')
 const taskDescription = ref('')
 const rangeStats = ref<DayStats[]>([])
 
-// Week dates for the table
+function toLocalDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+const today = computed(() => toLocalDate(new Date()))
+
+// Week navigation (table view)
+const weekOffset = ref(0)
+
 const weekDates = computed(() => {
+  const now = new Date()
+  const dayOfWeek = now.getDay()
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7) + (weekOffset.value * 7))
   const dates: string[] = []
-  const today = new Date()
-  // Show current week (Mon-Sun)
-  const dayOfWeek = today.getDay()
-  const monday = new Date(today)
-  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7))
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday)
     d.setDate(monday.getDate() + i)
-    dates.push(d.toISOString().slice(0, 10))
+    dates.push(toLocalDate(d))
   }
   return dates
+})
+
+const weekLabel = computed(() => {
+  if (weekDates.value.length === 0) return ''
+  const start = new Date(weekDates.value[0]!)
+  const end = new Date(weekDates.value[weekDates.value.length - 1]!)
+  const fmt = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+  const yearStr = end.getFullYear()
+  return `${fmt(start)} — ${fmt(end)} ${yearStr}`
+})
+
+function prevWeek() {
+  weekOffset.value--
+}
+
+function nextWeek() {
+  if (weekOffset.value < 0) weekOffset.value++
+}
+
+watch(weekOffset, () => {
+  loadWeekCompletions()
+})
+
+// Graph period navigation
+type GraphPeriod = 'week' | 'month' | 'year'
+const graphPeriod = ref<GraphPeriod>('month')
+const graphOffset = ref(0)
+
+const graphRange = computed(() => {
+  const now = new Date()
+  let start: Date
+  let end: Date
+
+  if (graphPeriod.value === 'week') {
+    const dayOfWeek = now.getDay()
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7) + (graphOffset.value * 7))
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    start = monday
+    end = sunday
+  } else if (graphPeriod.value === 'month') {
+    const base = new Date(now.getFullYear(), now.getMonth() + graphOffset.value, 1)
+    start = base
+    end = new Date(base.getFullYear(), base.getMonth() + 1, 0)
+  } else {
+    const year = now.getFullYear() + graphOffset.value
+    start = new Date(year, 0, 1)
+    end = new Date(year, 11, 31)
+  }
+
+  // Cap end at today
+  const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  if (end > todayDate) end = todayDate
+
+  return { start, end }
+})
+
+const graphLabel = computed(() => {
+  const { start, end } = graphRange.value
+  const fmt = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+
+  if (graphPeriod.value === 'year') {
+    return `${start.getFullYear()}`
+  }
+  if (graphPeriod.value === 'month') {
+    return start.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+  }
+  return `${fmt(start)} — ${fmt(end)} ${end.getFullYear()}`
+})
+
+function setGraphPeriod(period: GraphPeriod) {
+  graphPeriod.value = period
+  graphOffset.value = 0
+}
+
+function prevGraph() {
+  graphOffset.value--
+}
+
+function nextGraph() {
+  if (graphOffset.value < 0) graphOffset.value++
+}
+
+watch([graphPeriod, graphOffset], () => {
+  loadRangeStats()
 })
 
 onMounted(async () => {
@@ -76,12 +169,10 @@ async function loadWeekCompletions() {
 }
 
 async function loadRangeStats() {
-  const end = new Date()
-  const start = new Date()
-  start.setDate(end.getDate() - 30)
+  const { start, end } = graphRange.value
   const stats = await getRangeStats(
-    start.toISOString().slice(0, 10),
-    end.toISOString().slice(0, 10),
+    toLocalDate(start),
+    toLocalDate(end),
   )
   rangeStats.value = stats.days
 }
@@ -138,10 +229,10 @@ async function handleLogout() {
 
     <main class="content">
       <div class="page-header">
-        <h1>Daily Tasks</h1>
+        <h1>Tâches quotidiennes</h1>
         <Button @click="openCreate" size="sm">
           <Plus :size="16" />
-          Add Task
+          Ajouter
         </Button>
       </div>
 
@@ -153,7 +244,7 @@ async function handleLogout() {
         <!-- Task List -->
         <section class="task-list-section">
           <div v-if="tasks.length === 0" class="empty-state">
-            <p>No tasks yet. Create your first recurring task to start tracking.</p>
+            <p>Aucune tâche pour le moment. Créez votre première tâche récurrente.</p>
           </div>
           <div v-else class="task-list">
             <div v-for="task in tasks" :key="task.id" class="task-row" :class="{ inactive: !task.is_active }">
@@ -178,18 +269,56 @@ async function handleLogout() {
         <section v-if="activeTasks.length > 0" class="regularity-section">
           <Tabs default-value="table">
             <TabsList>
-              <TabsTrigger value="table">Week Table</TabsTrigger>
-              <TabsTrigger value="graph">30-Day Graph</TabsTrigger>
+              <TabsTrigger value="table">Semaine</TabsTrigger>
+              <TabsTrigger value="graph">Graphiques</TabsTrigger>
             </TabsList>
             <TabsContent value="table">
+              <div class="period-nav">
+                <Button variant="ghost" size="sm" @click="prevWeek">
+                  <ChevronLeft :size="16" />
+                </Button>
+                <span class="period-label">{{ weekLabel }}</span>
+                <Button variant="ghost" size="sm" @click="nextWeek" :disabled="weekOffset >= 0">
+                  <ChevronRight :size="16" />
+                </Button>
+              </div>
               <CompletionTable
                 :tasks="activeTasks"
                 :completions="completions"
                 :week-dates="weekDates"
+                :today="today"
                 @toggle="handleToggle"
               />
             </TabsContent>
             <TabsContent value="graph">
+              <div class="graph-controls">
+                <div class="period-switcher">
+                  <button
+                    class="period-btn"
+                    :class="{ active: graphPeriod === 'week' }"
+                    @click="setGraphPeriod('week')"
+                  >Semaine</button>
+                  <button
+                    class="period-btn"
+                    :class="{ active: graphPeriod === 'month' }"
+                    @click="setGraphPeriod('month')"
+                  >Mois</button>
+                  <button
+                    class="period-btn"
+                    :class="{ active: graphPeriod === 'year' }"
+                    @click="setGraphPeriod('year')"
+                  >Année</button>
+                </div>
+                <div class="period-nav">
+                  <Button variant="ghost" size="sm" @click="prevGraph">
+                    <ChevronLeft :size="16" />
+                  </Button>
+                  <span class="period-label">{{ graphLabel }}</span>
+                  <Button variant="ghost" size="sm" @click="nextGraph" :disabled="graphOffset >= 0">
+                    <ChevronRight :size="16" />
+                  </Button>
+                </div>
+              </div>
               <CompletionLineChart :days="rangeStats" />
             </TabsContent>
           </Tabs>
@@ -201,19 +330,19 @@ async function handleLogout() {
     <Dialog v-model:open="showDialog">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{{ editingId ? 'Edit Task' : 'New Task' }}</DialogTitle>
+          <DialogTitle>{{ editingId ? 'Modifier la tâche' : 'Nouvelle tâche' }}</DialogTitle>
           <DialogDescription>
-            {{ editingId ? 'Update your recurring task.' : 'Add a recurring daily task to track.' }}
+            {{ editingId ? 'Modifiez votre tâche récurrente.' : 'Ajoutez une tâche quotidienne récurrente à suivre.' }}
           </DialogDescription>
         </DialogHeader>
         <div class="dialog-form">
-          <Input v-model="taskName" placeholder="Task name" @keyup.enter="saveTask" />
-          <Input v-model="taskDescription" placeholder="Description (optional)" />
+          <Input v-model="taskName" placeholder="Nom de la tâche" @keyup.enter="saveTask" />
+          <Input v-model="taskDescription" placeholder="Description (facultatif)" />
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="showDialog = false">Cancel</Button>
+          <Button variant="outline" @click="showDialog = false">Annuler</Button>
           <Button @click="saveTask" :disabled="!taskName.trim()">
-            {{ editingId ? 'Save' : 'Create' }}
+            {{ editingId ? 'Enregistrer' : 'Créer' }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -238,12 +367,13 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .page-header h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
@@ -270,6 +400,7 @@ async function handleLogout() {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 12px;
+  font-size: 0.9rem;
 }
 
 .empty-state p {
@@ -290,15 +421,16 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 8px;
-  transition: border-color 0.15s;
+  border-radius: 10px;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .task-row:hover {
   border-color: var(--app-border-hover);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .task-row.inactive {
@@ -314,7 +446,7 @@ async function handleLogout() {
 
 .task-name {
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .task-desc {
@@ -326,11 +458,14 @@ async function handleLogout() {
 }
 
 .inactive-badge {
-  font-size: 0.7rem;
-  padding: 2px 6px;
+  font-size: 0.65rem;
+  padding: 2px 8px;
   background: var(--app-surface-3);
   border-radius: 4px;
-  color: var(--app-text-muted);
+  color: var(--app-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
 }
 
 .task-actions {
@@ -343,7 +478,62 @@ async function handleLogout() {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 12px;
-  padding: 20px;
+  padding: 20px 20px 20px 16px;
+}
+
+.graph-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.period-switcher {
+  display: flex;
+  gap: 2px;
+  background: var(--app-surface-2);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.period-btn {
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--app-text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.period-btn:hover {
+  color: var(--app-text);
+}
+
+.period-btn.active {
+  background: var(--app-surface);
+  color: var(--app-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.period-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--app-text-muted);
+  min-width: 180px;
+  text-align: center;
+  text-transform: capitalize;
 }
 
 .dialog-form {

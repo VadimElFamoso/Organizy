@@ -89,9 +89,8 @@ function formatDate(date: string): string {
   height: 14px;
   background: var(--app-text);
   box-shadow: none;
-  outline: 2px solid var(--app-text);
-  outline-offset: 2px;
-  border-radius: 9999px;
+  outline: 1px solid var(--app-text);
+  outline-offset: 1px;
 }
 
 .progress-label {

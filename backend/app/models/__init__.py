@@ -6,6 +6,8 @@ from app.models.monthly_usage import MonthlyUsage
 from app.models.todo_item import TodoItem
 from app.models.user import User
 from app.models.workout import Workout
+from app.models.workout_exercise import WorkoutExercise
+from app.models.workout_preset import WorkoutPreset, WorkoutPresetExercise
 
 __all__ = [
     "Base",
@@ -16,4 +18,7 @@ __all__ = [
     "User",
     "UserAnalytics",
     "Workout",
+    "WorkoutExercise",
+    "WorkoutPreset",
+    "WorkoutPresetExercise",
 ]

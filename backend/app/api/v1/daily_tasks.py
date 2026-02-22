@@ -112,6 +112,9 @@ async def toggle_completion(
     if not task_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Task not found")
 
+    if data.date > date.today():
+        raise HTTPException(status_code=400, detail="Cannot toggle completions for future dates")
+
     # Check if already completed
     existing = await db.execute(
         select(DailyTaskCompletion).where(
@@ -160,7 +163,7 @@ async def get_completions(
 
 @router.get("/stats/year", response_model=YearStatsResponse)
 async def get_year_stats(
-    year: int = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -214,6 +217,11 @@ async def get_range_stats(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    if (end - start).days > 366:
+        raise HTTPException(status_code=400, detail="Date range cannot exceed 366 days")
+    if end < start:
+        raise HTTPException(status_code=400, detail="End date must be after start date")
+
     # Get active task count
     task_result = await db.execute(
         select(func.count(DailyTask.id)).where(

@@ -63,10 +63,11 @@ async function handleLogout() {
 
     <main class="content">
       <div class="page-header">
-        <h1>Todos</h1>
+        <h1>Tâches</h1>
         <DoneArchive
           :todos="doneTodos"
           @bulk-delete="handleBulkDelete"
+          @delete="handleDelete"
         />
       </div>
 
@@ -104,12 +105,13 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .page-header h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   Sheet,
   SheetContent,
@@ -9,42 +9,51 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Archive, Trash2 } from 'lucide-vue-next'
+import { Archive, Trash2, Check } from 'lucide-vue-next'
 import type { TodoItem } from '@/services/api'
 
-defineProps<{
+const props = defineProps<{
   todos: TodoItem[]
 }>()
 
 const emit = defineEmits<{
   bulkDelete: [ids: string[]]
-  undone: [id: string]
+  delete: [id: string]
 }>()
 
 const selectedIds = ref<Set<string>>(new Set())
 
+const allSelected = computed(() =>
+  props.todos.length > 0 && selectedIds.value.size === props.todos.length
+)
+
 function toggleSelect(id: string) {
-  if (selectedIds.value.has(id)) {
-    selectedIds.value.delete(id)
+  const next = new Set(selectedIds.value)
+  if (next.has(id)) {
+    next.delete(id)
   } else {
-    selectedIds.value.add(id)
+    next.add(id)
   }
+  selectedIds.value = next
 }
 
-function toggleAll(todos: TodoItem[]) {
-  if (selectedIds.value.size === todos.length) {
-    selectedIds.value.clear()
+function toggleAll() {
+  if (allSelected.value) {
+    selectedIds.value = new Set()
   } else {
-    selectedIds.value = new Set(todos.map(t => t.id))
+    selectedIds.value = new Set(props.todos.map(t => t.id))
   }
 }
 
 function handleBulkDelete() {
   emit('bulkDelete', Array.from(selectedIds.value))
-  selectedIds.value.clear()
+  selectedIds.value = new Set()
 }
 
+function handleDelete(id: string) {
+  selectedIds.value.delete(id)
+  emit('delete', id)
+}
 </script>
 
 <template>
@@ -52,16 +61,23 @@ function handleBulkDelete() {
     <SheetTrigger as-child>
       <Button variant="outline" size="sm">
         <Archive :size="14" />
-        Done ({{ todos.length }})
+        Terminées ({{ todos.length }})
       </Button>
     </SheetTrigger>
     <SheetContent>
       <SheetHeader>
-        <SheetTitle>Done Archive</SheetTitle>
-        <SheetDescription>Completed todos. Select items to delete them permanently.</SheetDescription>
+        <SheetTitle>Archive des tâches terminées</SheetTitle>
+        <SheetDescription>Tâches complétées. Sélectionnez des éléments pour les supprimer définitivement.</SheetDescription>
       </SheetHeader>
 
-      <div class="archive-actions">
+      <div v-if="todos.length > 0" class="archive-actions">
+        <Button
+          variant="ghost"
+          size="sm"
+          @click="toggleAll"
+        >
+          {{ allSelected ? 'Tout désélectionner' : 'Tout sélectionner' }}
+        </Button>
         <Button
           v-if="selectedIds.size > 0"
           variant="destructive"
@@ -69,34 +85,39 @@ function handleBulkDelete() {
           @click="handleBulkDelete"
         >
           <Trash2 :size="14" />
-          Delete {{ selectedIds.size }} selected
-        </Button>
-        <Button
-          v-if="todos.length > 0"
-          variant="ghost"
-          size="sm"
-          @click="toggleAll(todos)"
-        >
-          {{ selectedIds.size === todos.length ? 'Deselect all' : 'Select all' }}
+          Supprimer ({{ selectedIds.size }})
         </Button>
       </div>
 
       <div v-if="todos.length === 0" class="empty">
-        <p>No completed todos yet.</p>
+        <p>Aucune tâche terminée pour le moment.</p>
       </div>
 
       <div v-else class="archive-list">
-        <div v-for="todo in todos" :key="todo.id" class="archive-item">
-          <Checkbox
-            :checked="selectedIds.has(todo.id)"
-            @update:checked="toggleSelect(todo.id)"
-          />
+        <div
+          v-for="todo in todos"
+          :key="todo.id"
+          class="archive-item"
+          :class="{ selected: selectedIds.has(todo.id) }"
+          @click="toggleSelect(todo.id)"
+        >
+          <div class="square" :class="{ filled: selectedIds.has(todo.id) }">
+            <Check v-if="selectedIds.has(todo.id)" :size="12" class="check-icon" />
+          </div>
           <div class="item-info">
             <span class="item-title">{{ todo.title }}</span>
             <span v-if="todo.done_at" class="item-date">
-              Done {{ new Date(todo.done_at).toLocaleDateString() }}
+              Terminée le {{ new Date(todo.done_at).toLocaleDateString('fr-FR') }}
             </span>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="item-delete"
+            @click.stop="handleDelete(todo.id)"
+          >
+            <Trash2 :size="13" />
+          </Button>
         </div>
       </div>
     </SheetContent>
@@ -106,6 +127,7 @@ function handleBulkDelete() {
 <style scoped>
 .archive-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
   padding: 12px 0;
   border-bottom: 1px solid var(--app-border);
@@ -125,7 +147,7 @@ function handleBulkDelete() {
 .archive-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   max-height: calc(100vh - 250px);
   overflow-y: auto;
 }
@@ -134,8 +156,9 @@ function handleBulkDelete() {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 8px;
+  padding: 8px;
   border-radius: 6px;
+  cursor: pointer;
   transition: background 0.15s;
 }
 
@@ -143,15 +166,41 @@ function handleBulkDelete() {
   background: var(--app-surface-2);
 }
 
+.archive-item.selected {
+  background: var(--app-surface-2);
+}
+
+.square {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
+  flex-shrink: 0;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.square.filled {
+  background: var(--app-text);
+  border-color: var(--app-text);
+}
+
+.check-icon {
+  color: var(--app-surface);
+}
+
 .item-info {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .item-title {
   font-size: 0.85rem;
-  text-decoration: line-through;
   color: var(--app-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -161,5 +210,18 @@ function handleBulkDelete() {
 .item-date {
   font-size: 0.7rem;
   color: var(--app-text-dim);
+}
+
+.item-delete {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+  padding: 4px;
+  height: auto;
+  color: var(--app-text-dim);
+}
+
+.archive-item:hover .item-delete {
+  opacity: 1;
 }
 </style>

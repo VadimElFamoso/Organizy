@@ -106,12 +106,20 @@ export interface RangeStats {
   days: DayStats[]
 }
 
+export interface ExerciseItem {
+  id?: string
+  name: string
+  notes?: string | null
+  sort_order: number
+}
+
 export interface WorkoutItem {
   id: string
   workout_type: string
   notes?: string | null
   workout_date: string
   duration_minutes?: number | null
+  exercises: ExerciseItem[]
   created_at: string
 }
 
@@ -119,11 +127,21 @@ export interface WorkoutSummary {
   total_workouts: number
   current_streak: number
   last_workout: WorkoutItem | null
+  today_workouts: WorkoutItem[]
 }
 
 export interface WorkoutCalendarDay {
   date: string
   count: number
+}
+
+export interface WorkoutPreset {
+  id: string
+  name: string
+  workout_type: string
+  duration_minutes?: number | null
+  exercises: ExerciseItem[]
+  created_at: string
 }
 
 export interface TodoItem {
@@ -381,18 +399,22 @@ class ApiClient {
     return this.fetch<WorkoutItem[]>(`/workouts/?limit=${limit}&offset=${offset}`)
   }
 
-  async createWorkout(data: { workout_type: string; notes?: string; workout_date: string; duration_minutes?: number }): Promise<WorkoutItem> {
+  async createWorkout(data: { workout_type: string; notes?: string; workout_date?: string; duration_minutes?: number; exercises?: ExerciseItem[] }): Promise<WorkoutItem> {
     return this.fetch<WorkoutItem>('/workouts/', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
-  async updateWorkout(id: string, data: Partial<{ workout_type: string; notes: string | null; workout_date: string; duration_minutes: number | null }>): Promise<WorkoutItem> {
+  async updateWorkout(id: string, data: Partial<{ workout_type: string; notes: string | null; duration_minutes: number | null; exercises: ExerciseItem[] }>): Promise<WorkoutItem> {
     return this.fetch<WorkoutItem>(`/workouts/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     })
+  }
+
+  async getWorkoutsByDate(workoutDate: string): Promise<WorkoutItem[]> {
+    return this.fetch<WorkoutItem[]>(`/workouts/by-date?workout_date=${workoutDate}`)
   }
 
   async deleteWorkout(id: string): Promise<void> {
@@ -409,6 +431,28 @@ class ApiClient {
 
   async getWorkoutTypes(): Promise<string[]> {
     return this.fetch<string[]>('/workouts/types')
+  }
+
+  async getWorkoutPresets(): Promise<WorkoutPreset[]> {
+    return this.fetch<WorkoutPreset[]>('/workouts/presets')
+  }
+
+  async createWorkoutPreset(data: { name: string; workout_type: string; duration_minutes?: number | null; exercises?: { name: string; notes?: string | null; sort_order: number }[] }): Promise<WorkoutPreset> {
+    return this.fetch<WorkoutPreset>('/workouts/presets', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateWorkoutPreset(id: string, data: Partial<{ name: string; workout_type: string; duration_minutes: number | null; exercises: { name: string; notes?: string | null; sort_order: number }[] }>): Promise<WorkoutPreset> {
+    return this.fetch<WorkoutPreset>(`/workouts/presets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteWorkoutPreset(id: string): Promise<void> {
+    return this.fetch(`/workouts/presets/${id}`, { method: 'DELETE' })
   }
 
   // ==========================================================================

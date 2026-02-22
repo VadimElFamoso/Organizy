@@ -62,10 +62,10 @@ function handleMobileAction(action: () => void) {
 }
 
 const navLinks = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/daily-tasks', label: 'Daily Tasks', icon: CalendarCheck },
-  { to: '/workouts', label: 'Workouts', icon: Dumbbell },
-  { to: '/todos', label: 'Todos', icon: ListTodo },
+  { to: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+  { to: '/daily-tasks', label: 'Tâches quotidiennes', icon: CalendarCheck },
+  { to: '/workouts', label: 'Sport', icon: Dumbbell },
+  { to: '/todos', label: 'Tâches', icon: ListTodo },
 ]
 
 function isActive(path: string) {
@@ -88,7 +88,7 @@ function isActive(path: string) {
 
       <!-- Logo -->
       <RouterLink to="/dashboard" class="app-navbar-logo">
-        <CalendarCheck :size="18" />
+        <span class="logo-mark">O</span>
         <span class="logo-text">Organizy</span>
       </RouterLink>
 
@@ -131,12 +131,12 @@ function isActive(path: string) {
               @click="goToSettings"
             >
               <Settings :size="16" />
-              Settings
+              Paramètres
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem @click="handleLogout" data-variant="destructive">
               <LogOut :size="16" />
-              Sign Out
+              Déconnexion
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -181,11 +181,11 @@ function isActive(path: string) {
             </div>
             <RouterLink to="/settings" class="mobile-menu-item" @click="mobileMenuOpen = false">
               <Settings :size="18" />
-              <span>Account Settings</span>
+              <span>Paramètres du compte</span>
             </RouterLink>
             <button class="mobile-menu-item mobile-logout" @click="handleMobileAction(() => emit('logout'))">
               <LogOut :size="18" />
-              <span>Sign Out</span>
+              <span>Déconnexion</span>
             </button>
           </template>
         </div>
@@ -221,7 +221,8 @@ function isActive(path: string) {
 }
 
 .logo-text {
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* Nav links */
@@ -338,13 +339,13 @@ function isActive(path: string) {
 /* Mobile menu overlay */
 .mobile-menu {
   position: absolute;
-  top: 52px;
+  top: 60px;
   left: 0;
   right: 0;
   background: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
   z-index: 1000;
-  max-height: calc(100vh - 52px);
+  max-height: calc(100vh - 60px);
   overflow-x: hidden;
   overflow-y: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -359,10 +360,11 @@ function isActive(path: string) {
 
 .mobile-section-label {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
+  font-weight: 600;
   color: var(--app-text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   padding: 0 16px 8px;
 }
 

@@ -1,218 +1,163 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { RouterLink, useRouter, useRoute } from 'vue-router'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/composables/useAuth'
-import { api, type PlanInfo, type SubscriptionInfo } from '@/services/api'
-import { CalendarCheck, Check, ArrowLeft, Loader2, Clock, CreditCard, AlertTriangle } from 'lucide-vue-next'
-import { useToast } from '@/composables/useToast'
+import { Check } from 'lucide-vue-next'
 
-const router = useRouter()
-const route = useRoute()
-const { user, isAuthenticated } = useAuth()
-const { showToast } = useToast()
+const { isAuthenticated, loginWithGoogle } = useAuth()
 
-const plans = ref<PlanInfo[]>([])
-const subscription = ref<SubscriptionInfo | null>(null)
-const isLoading = ref(true)
-const processingPlan = ref<string | null>(null)
+const scrolled = ref(false)
+
+function onScroll() {
+  scrolled.value = window.scrollY > 10
+}
+
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
+
 const billingCycle = ref<'monthly' | 'yearly'>('monthly')
 
-const trialDaysRemaining = computed(() => {
-  if (!user.value?.subscription_end_date) return 0
-  const trialEnd = new Date(user.value.subscription_end_date)
-  const now = new Date()
-  const remaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
-  return Math.max(0, remaining)
-})
-
-const isTrialing = computed(() => user.value?.subscription_status === 'trialing')
-const isActive = computed(() => user.value?.subscription_status === 'active')
-const isPastDue = computed(() => user.value?.subscription_status === 'past_due')
-const isCanceled = computed(() => {
-  if (user.value?.subscription_status !== 'canceled') return false
-  if (!user.value?.subscription_end_date) return false
-  return new Date(user.value.subscription_end_date) > new Date()
-})
-const hasAccess = computed(() => isActive.value || isTrialing.value || isCanceled.value)
-const needsSubscription = computed(() => !hasAccess.value && !isPastDue.value)
-
-onMounted(async () => {
-  // Check for payment status in URL
-  const paymentStatus = route.query.payment as string
-  if (paymentStatus === 'success') {
-    showToast('Payment successful! Welcome to Pro.', 'success')
-    router.replace({ path: '/pricing' })
-  } else if (paymentStatus === 'canceled') {
-    showToast('Payment canceled. You can try again anytime.', 'info')
-    router.replace({ path: '/pricing' })
-  }
-
-  try {
-    const [plansData, subData] = await Promise.all([
-      api.getPlans(),
-      isAuthenticated.value ? api.getSubscription() : Promise.resolve(null)
-    ])
-    plans.value = plansData
-    subscription.value = subData
-  } catch (error) {
-    console.error('Failed to load plans:', error)
-  } finally {
-    isLoading.value = false
-  }
-})
-
-function loginWithGoogle() {
-  // Store intent to start trial after login
-  sessionStorage.setItem('organizy_after_login', 'start_trial')
-  window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/auth/google/login`
+interface Plan {
+  name: string
+  price_monthly: number
+  price_yearly: number
+  features: string[]
+  badge?: string
+  highlighted?: boolean
 }
 
-async function subscribe(plan: PlanInfo) {
-  if (!plan.available) return
+const plans: Plan[] = [
+  {
+    name: 'Gratuit',
+    price_monthly: 0,
+    price_yearly: 0,
+    features: [
+      '4 tâches quotidiennes',
+      '8 tâches kanban',
+      'Historique sport limité à 30 jours',
+      'Statistiques de base',
+    ],
+  },
+  {
+    name: 'Standard',
+    price_monthly: 9.99,
+    price_yearly: 89.91,
+    badge: 'Populaire',
+    highlighted: true,
+    features: [
+      'Tâches quotidiennes illimitées',
+      'Tâches kanban illimitées',
+      'Historique sport illimité',
+      'Statistiques complètes',
+      'Graphique de régularité',
+      'Calendrier annuel',
+    ],
+  },
+  {
+    name: 'Pro',
+    price_monthly: 24.99,
+    price_yearly: 224.91,
+    features: [
+      'Tout le plan Standard',
+      'Accès aux futurs outils',
+      'Fonctionnalités avancées à venir',
+      'Support prioritaire',
+    ],
+  },
+]
 
-  if (!isAuthenticated.value) {
-    // Prompt to sign in first
-    loginWithGoogle()
-    return
-  }
-
-  processingPlan.value = plan.name
-  try {
-    const priceId = billingCycle.value === 'yearly' ? plan.price_id_yearly : plan.price_id
-    const { checkout_url } = await api.createCheckoutSession(priceId)
-    window.location.href = checkout_url
-  } catch (error) {
-    console.error('Failed to create checkout session:', error)
-    showToast('Failed to start checkout. Please try again.', 'error')
-  } finally {
-    processingPlan.value = null
-  }
-}
-
-async function manageSubscription() {
-  try {
-    const { portal_url } = await api.createPortalSession()
-    window.location.href = portal_url
-  } catch (error) {
-    console.error('Failed to open portal:', error)
-    showToast('Failed to open billing portal. Please try again.', 'error')
-  }
-}
-
-function getPrice(plan: PlanInfo) {
+function getPrice(plan: Plan) {
   const price = billingCycle.value === 'monthly' ? plan.price_monthly : plan.price_yearly / 12
+  if (price === 0) return '0'
   return price % 1 === 0 ? price.toString() : price.toFixed(2).replace('.', ',')
+}
+
+function handleCta() {
+  if (isAuthenticated.value) {
+    window.location.href = '/dashboard'
+  } else {
+    loginWithGoogle()
+  }
 }
 </script>
 
 <template>
-  <div class="pricing-page">
-    <!-- Header -->
-    <header class="header">
-      <RouterLink :to="isAuthenticated ? '/dashboard' : '/'" class="back-link">
-        <ArrowLeft :size="20" />
-        Back
-      </RouterLink>
-      <div class="logo">
-        <CalendarCheck :size="32" />
-        <span>Organizy</span>
-      </div>
-      <div class="header-spacer"></div>
+  <div class="page">
+    <!-- Nav (same as landing page) -->
+    <header class="nav-wrap" :class="{ scrolled }">
+      <nav class="nav">
+        <RouterLink to="/" class="logo">
+          <span class="logo-mark">O</span>
+          <span>Organizy</span>
+        </RouterLink>
+        <div class="nav-center">
+          <RouterLink to="/#features">Fonctionnalités</RouterLink>
+          <RouterLink to="/#how">Comment ça marche</RouterLink>
+          <RouterLink to="/pricing" class="active">Tarifs</RouterLink>
+        </div>
+        <div class="nav-right">
+          <RouterLink v-if="isAuthenticated" to="/dashboard">
+            <Button variant="ghost" size="sm">Tableau de bord</Button>
+          </RouterLink>
+          <Button v-if="!isAuthenticated" size="sm" class="nav-cta" @click="handleLogin">
+            Commencer gratuitement
+          </Button>
+        </div>
+      </nav>
     </header>
-
-    <!-- Trial Banner -->
-    <Alert v-if="isAuthenticated && isTrialing" class="status-banner">
-      <Clock class="h-4 w-4 text-[var(--app-text-muted)]" />
-      <AlertDescription class="text-[var(--app-text)]">
-        <strong>{{ trialDaysRemaining }} days</strong> left in your free trial.
-        Your card will be charged after the trial ends.
-      </AlertDescription>
-    </Alert>
-
-    <!-- Canceled Banner -->
-    <Alert v-else-if="isAuthenticated && isCanceled" class="status-banner">
-      <Clock class="h-4 w-4 text-orange-400" />
-      <AlertDescription class="text-[var(--app-text)]">
-        Your subscription is canceled. You still have access until your current period ends. Resubscribe below.
-      </AlertDescription>
-    </Alert>
-
-    <!-- Past Due Banner -->
-    <Alert v-else-if="isAuthenticated && isPastDue" class="status-banner">
-      <AlertTriangle class="h-4 w-4 text-red-400" />
-      <AlertDescription class="flex items-center gap-3 text-[var(--app-text)]">
-        <span><strong>Payment failed.</strong> Please update your payment method to continue.</span>
-        <Button size="sm" variant="outline" @click="manageSubscription">
-          Update Payment
-        </Button>
-      </AlertDescription>
-    </Alert>
-
-    <!-- Needs subscription Banner (new users or expired) -->
-    <Alert v-else-if="isAuthenticated && needsSubscription" class="status-banner">
-      <CreditCard class="h-4 w-4 text-[var(--theme-accent)]" />
-      <AlertDescription class="text-[var(--app-text)]">
-        Start your 7-day free trial to access all features. Cancel anytime.
-      </AlertDescription>
-    </Alert>
 
     <!-- Hero -->
     <section class="hero">
-      <h1>Unlock all features</h1>
-      <p>7-day free trial. Cancel anytime before trial ends.</p>
+      <h1>Choisissez votre plan</h1>
+      <p class="hero-sub">Commencez gratuitement, passez à la vitesse supérieure quand vous voulez.</p>
 
       <div class="billing-toggle">
         <button
           :class="{ active: billingCycle === 'monthly' }"
           @click="billingCycle = 'monthly'"
         >
-          Monthly
+          Mensuel
         </button>
         <button
           :class="{ active: billingCycle === 'yearly' }"
           @click="billingCycle = 'yearly'"
         >
-          Yearly
-          <span class="save-badge">Save 33%</span>
+          Annuel
+          <span class="save-badge">−25 %</span>
         </button>
       </div>
     </section>
 
     <!-- Plans -->
     <section class="plans">
-      <div v-if="isLoading" class="loading">
-        <Loader2 :size="32" class="spinner" />
-      </div>
-
-      <div v-else class="plans-grid">
+      <div class="plans-grid">
         <div
           v-for="plan in plans"
           :key="plan.name"
-          :class="['plan-card', { featured: plan.is_popular, unavailable: !plan.available }]"
+          :class="['plan-card', { featured: plan.highlighted }]"
         >
-          <Badge v-if="plan.is_popular" class="absolute -top-3 left-1/2 -translate-x-1/2 bg-stone-600 text-white border-0">
-            7 Days Free
-          </Badge>
-          <Badge v-if="!plan.available" variant="secondary" class="absolute -top-3 left-1/2 -translate-x-1/2">
-            Coming Soon
+          <Badge v-if="plan.badge" class="plan-badge featured-badge">
+            {{ plan.badge }}
           </Badge>
 
           <h2 class="plan-name">{{ plan.name }}</h2>
 
           <div class="plan-price">
             <span class="amount">{{ getPrice(plan) }}</span>
-            <span class="currency">€</span>
-            <span class="period">/mo</span>
+            <span v-if="plan.price_monthly > 0" class="currency">€</span>
+            <span class="period">{{ plan.price_monthly === 0 ? '€ pour toujours' : '/mois' }}</span>
           </div>
 
           <p v-if="billingCycle === 'yearly' && plan.price_yearly > 0" class="billed-yearly">
-            Billed {{ plan.price_yearly.toFixed(2).replace('.', ',') }}€/year
+            Facturé {{ plan.price_yearly.toFixed(2).replace('.', ',') }}€/an
           </p>
-          <p v-else-if="plan.price_monthly > 0" class="billed-yearly">
-            After 7-day free trial
+          <p v-else-if="plan.price_monthly === 0" class="billed-yearly">
+            Aucune carte bancaire requise
+          </p>
+          <p v-else class="billed-yearly">
+            Annulez à tout moment
           </p>
 
           <ul class="features-list">
@@ -222,54 +167,19 @@ function getPrice(plan: PlanInfo) {
             </li>
           </ul>
 
-          <!-- Active subscriber -->
           <Button
-            v-if="isActive && plan.is_popular"
-            @click="manageSubscription"
-            class="plan-button manage"
+            v-if="plan.price_monthly === 0"
+            class="plan-btn"
+            @click="handleCta"
           >
-            Manage Subscription
+            {{ isAuthenticated ? 'Tableau de bord' : 'Commencer gratuitement' }}
           </Button>
-
-          <!-- Trialing user -->
-          <Button
-            v-else-if="isTrialing && plan.is_popular"
-            @click="manageSubscription"
-            class="plan-button manage"
-          >
-            Manage Trial
-          </Button>
-
-          <!-- Past Due user - needs to update payment -->
-          <Button
-            v-else-if="isPastDue && plan.is_popular"
-            @click="manageSubscription"
-            class="plan-button past-due"
-          >
-            <AlertTriangle :size="16" />
-            Update Payment Method
-          </Button>
-
-          <!-- Canceled user - can resubscribe -->
-          <Button
-            v-else-if="isCanceled && plan.is_popular"
-            :disabled="processingPlan === plan.name"
-            :class="['plan-button', { featured: true }]"
-            @click="subscribe(plan)"
-          >
-            <Loader2 v-if="processingPlan === plan.name" :size="16" class="spinner" />
-            <span v-else>Resubscribe</span>
-          </Button>
-
-          <!-- New user or expired - start trial -->
           <Button
             v-else
-            :disabled="!plan.available || processingPlan === plan.name"
-            :class="['plan-button', { featured: plan.is_popular }]"
-            @click="subscribe(plan)"
+            :class="['plan-btn', { 'plan-btn-primary': plan.highlighted }]"
+            @click="handleCta"
           >
-            <Loader2 v-if="processingPlan === plan.name" :size="16" class="spinner" />
-            <span v-else>Start Free Trial</span>
+            Choisir {{ plan.name }}
           </Button>
         </div>
       </div>
@@ -277,101 +187,139 @@ function getPrice(plan: PlanInfo) {
 
     <!-- FAQ -->
     <section class="faq">
-      <h2>Frequently asked questions</h2>
+      <h2>Questions fréquentes</h2>
       <div class="faq-grid">
         <div class="faq-item">
-          <h3>How does the free trial work?</h3>
-          <p>Enter your card to start a 7-day free trial with full access. Cancel anytime before the trial ends and you won't be charged.</p>
+          <h3>Le plan gratuit est-il vraiment gratuit ?</h3>
+          <p>Oui, totalement. Pas de carte bancaire, pas d'essai qui expire. Vous pouvez l'utiliser aussi longtemps que vous voulez avec les limites du plan.</p>
         </div>
         <div class="faq-item">
-          <h3>When will I be charged?</h3>
-          <p>Your card will be charged after your 7-day trial ends. You'll receive an email reminder before the trial expires.</p>
+          <h3>Quelles sont les limites du plan gratuit ?</h3>
+          <p>Vous pouvez créer jusqu'à 4 tâches quotidiennes et 8 tâches kanban. L'historique sport est conservé 30 jours. Au-delà, les anciennes données sont supprimées automatiquement.</p>
         </div>
         <div class="faq-item">
-          <h3>Can I cancel anytime?</h3>
-          <p>Yes! Cancel during the trial and pay nothing. After that, cancel anytime and keep access until your billing period ends.</p>
+          <h3>Puis-je annuler à tout moment ?</h3>
+          <p>Oui ! Annulez à tout moment et conservez l'accès jusqu'à la fin de votre période de facturation. Repassez au plan gratuit sans rien perdre.</p>
         </div>
         <div class="faq-item">
-          <h3>What payment methods do you accept?</h3>
-          <p>We accept all major credit cards through our secure payment processor, Stripe.</p>
+          <h3>Que comprend le plan Pro ?</h3>
+          <p>Tout ce qui est dans le plan Standard, plus l'accès à tous les futurs outils que nous développerons. Vous bénéficiez aussi d'un support prioritaire.</p>
         </div>
       </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-      <p>Questions? Contact us at support@example.com</p>
+      <div class="footer-inner">
+        <div class="footer-logo">
+          <span class="footer-mark">O</span>
+          <span>Organizy</span>
+        </div>
+        <p>Des questions ? Contactez-nous à support@example.com</p>
+      </div>
     </footer>
   </div>
 </template>
 
 <style scoped>
-.pricing-page {
+.page {
   min-height: 100vh;
   background: var(--app-bg, #faf8f5);
   color: var(--app-text, #1a1815);
 }
 
-/* Header */
-.header {
+/* ── Nav (matches landing page) ── */
+.nav-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--app-bg);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.nav-wrap.scrolled {
+  border-bottom-color: var(--app-border);
+}
+
+.nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 32px;
-  border-bottom: 1px solid var(--app-border);
-}
-
-.back-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--app-text-muted);
-  text-decoration: none;
-  font-size: 0.875rem;
-  transition: color 0.2s;
-}
-
-.back-link:hover {
-  color: var(--app-text);
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 12px 40px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--theme-accent);
-  font-weight: 600;
-  font-size: 1.25rem;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--app-text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
 }
 
-.header-spacer {
-  width: 60px;
-}
-
-/* Status banner */
-.status-banner {
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--app-text);
+  color: var(--app-bg);
   display: flex;
+  align-items: center;
   justify-content: center;
-  background: var(--app-surface-3);
-  border: none;
-  border-bottom: 1px solid var(--app-border);
-  border-radius: 0;
+  font-weight: 800;
+  font-size: 0.85rem;
 }
 
-/* Hero */
+.nav-center {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-center a {
+  color: var(--app-text-muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.nav-center a:hover,
+.nav-center a.active {
+  color: var(--app-text);
+  background: var(--app-surface-2);
+}
+
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.nav-right a { text-decoration: none; }
+
+.nav-cta {
+  padding: 8px 18px;
+}
+
+/* ── Hero ── */
 .hero {
   text-align: center;
   padding: 64px 32px 48px;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .hero h1 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
+  letter-spacing: -0.025em;
   margin: 0 0 12px;
 }
 
-.hero p {
-  font-size: 1.125rem;
+.hero-sub {
+  font-size: 1.05rem;
   color: var(--app-text-muted);
   margin: 0 0 32px;
 }
@@ -379,7 +327,8 @@ function getPrice(plan: PlanInfo) {
 .billing-toggle {
   display: inline-flex;
   background: var(--app-surface-2);
-  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
   padding: 4px;
 }
 
@@ -387,49 +336,37 @@ function getPrice(plan: PlanInfo) {
   background: transparent;
   border: none;
   color: var(--app-text-muted);
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 8px 18px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.875rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .billing-toggle button.active {
-  background: var(--app-surface-3);
+  background: var(--app-surface);
   color: var(--app-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .save-badge {
-  background: var(--theme-accent);
-  color: white;
-  font-size: 0.75rem;
-  padding: 2px 6px;
+  background: var(--app-text);
+  color: var(--app-bg, #faf8f5);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 7px;
   border-radius: 4px;
 }
 
-/* Plans */
+/* ── Plans ── */
 .plans {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 32px 64px;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  padding: 64px;
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  padding: 0 32px 72px;
 }
 
 .plans-grid {
@@ -443,21 +380,52 @@ function getPrice(plan: PlanInfo) {
   width: 100%;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 32px;
   position: relative;
   display: flex;
   flex-direction: column;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.plan-card:hover {
+  border-color: var(--app-border-hover);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 .plan-card.featured {
-  border-color: var(--theme-accent);
-  background: linear-gradient(180deg, rgba(120, 113, 108, 0.05) 0%, transparent 50%);
+  border-color: var(--app-text);
+  border-width: 2px;
+  transform: scale(1.04);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.plan-card.featured:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.plan-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.featured-badge {
+  background: var(--app-text);
+  color: var(--app-bg, #faf8f5);
+  border: none;
 }
 
 .plan-name {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin: 0 0 16px;
 }
 
@@ -469,22 +437,23 @@ function getPrice(plan: PlanInfo) {
 }
 
 .currency {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: var(--app-text-muted);
 }
 
 .amount {
-  font-size: 3rem;
+  font-size: 2.8rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .period {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--app-text-muted);
 }
 
 .billed-yearly {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--app-text-muted);
   margin: 0 0 24px;
 }
@@ -492,73 +461,47 @@ function getPrice(plan: PlanInfo) {
 .features-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 32px;
+  margin: 0 0 28px;
   flex: 1;
 }
 
 .features-list li {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 0;
+  gap: 10px;
+  padding: 7px 0;
   font-size: 0.875rem;
   color: var(--app-text-muted);
 }
 
 .features-list li svg {
-  color: var(--theme-accent);
+  color: var(--app-text);
   flex-shrink: 0;
 }
 
-.plan-button {
+.plan-btn {
   width: 100%;
-  background: var(--app-surface-3);
-  border: none;
-  color: var(--app-text);
   padding: 12px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
 
-.plan-button:hover:not(:disabled) {
-  background: var(--app-border-hover);
+.plan-btn-primary {
+  background: var(--app-text);
+  color: var(--app-bg, #faf8f5);
+  border: none;
 }
 
-.plan-button.featured {
-  background: var(--theme-accent);
+.plan-btn-primary:hover:not(:disabled) {
+  background: #3d3a36;
 }
 
-.plan-button.featured:hover:not(:disabled) {
-  background: var(--theme-accent-hover);
-}
-
-.plan-button.manage {
-  background: transparent;
-  border: 1px solid var(--app-border-hover);
-}
-
-.plan-button.past-due {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  color: #fca5a5;
-}
-
-.plan-button.past-due:hover {
-  background: rgba(239, 68, 68, 0.3);
-}
-
-.plan-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* FAQ */
+/* ── FAQ ── */
 .faq {
   max-width: 900px;
   margin: 0 auto;
@@ -569,6 +512,8 @@ function getPrice(plan: PlanInfo) {
 .faq h2 {
   text-align: center;
   font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin: 0 0 48px;
 }
 
@@ -578,57 +523,103 @@ function getPrice(plan: PlanInfo) {
   gap: 32px;
 }
 
+.faq-item {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.15s;
+}
+
+.faq-item:hover {
+  border-color: var(--app-border-hover);
+}
+
 .faq-item h3 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   margin: 0 0 8px;
 }
 
 .faq-item p {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--app-text-muted);
   margin: 0;
   line-height: 1.6;
 }
 
-/* Footer */
+/* ── Footer ── */
 .footer {
-  text-align: center;
-  padding: 32px;
   border-top: 1px solid var(--app-border);
+  padding: 40px 32px;
+}
+
+.footer-inner {
+  max-width: 1260px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--app-text);
+}
+
+.footer-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--app-text);
+  color: var(--app-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.72rem;
 }
 
 .footer p {
   color: var(--app-text-dim);
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
 }
 
-/* Responsive */
-@media (max-width: 700px) {
+.footer a {
+  color: var(--app-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .nav { padding: 12px 20px; }
+  .nav-center { display: none; }
+
+  .hero { padding: 48px 20px 36px; }
+  .hero h1 { font-size: 1.6rem; }
+
+  .plans { padding: 0 20px 48px; }
   .plans-grid {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .plan-card.featured {
-    order: -1;
-  }
-}
-
-@media (max-width: 640px) {
-  .hero h1 {
-    font-size: 1.75rem;
-  }
-
-  .faq-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .status-banner {
     flex-direction: column;
+    align-items: center;
+  }
+
+  .plan-card.featured { order: -1; }
+
+  .faq { padding: 48px 20px; }
+  .faq-grid { grid-template-columns: 1fr; }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 12px;
     text-align: center;
   }
+
 }
 </style>

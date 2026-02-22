@@ -6,12 +6,13 @@ const props = defineProps<{
   tasks: DailyTask[]
   completions: Completion[]
   weekDates: string[]
+  today: string
 }>()
 
 const dayLabels = computed(() =>
   props.weekDates.map(d => {
     const date = new Date(d)
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
     return { date: d, label: days[date.getDay()], day: date.getDate() }
   })
 )
@@ -28,6 +29,16 @@ function isCompleted(taskId: string, date: string): boolean {
   return completionSet.value.has(`${taskId}:${date}`)
 }
 
+function isToday(date: string): boolean {
+  return date === props.today
+}
+
+function handleClick(taskId: string, date: string) {
+  if (isToday(date)) {
+    emit('toggle', taskId, date)
+  }
+}
+
 const emit = defineEmits<{
   toggle: [taskId: string, date: string]
 }>()
@@ -38,7 +49,7 @@ const emit = defineEmits<{
     <table class="completion-table">
       <thead>
         <tr>
-          <th class="task-col">Task</th>
+          <th class="task-col">Tâche</th>
           <th v-for="d in dayLabels" :key="d.date" class="day-col">
             <span class="day-name">{{ d.label }}</span>
             <span class="day-num">{{ d.day }}</span>
@@ -52,7 +63,8 @@ const emit = defineEmits<{
             v-for="d in dayLabels"
             :key="d.date"
             class="cell"
-            @click="emit('toggle', task.id, d.date)"
+            :class="{ disabled: !isToday(d.date) }"
+            @click="handleClick(task.id, d.date)"
           >
             <div
               class="square"
@@ -73,6 +85,7 @@ const emit = defineEmits<{
 .completion-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: 0.85rem;
 }
 
@@ -82,11 +95,27 @@ const emit = defineEmits<{
   text-align: center;
 }
 
+.completion-table th.task-col {
+  padding-left: 48px;
+  text-align: left;
+}
+
+.completion-table td.task-name {
+  padding-left: 48px;
+  text-align: left;
+}
+
 .task-col {
   text-align: left;
-  font-weight: 500;
-  color: var(--app-text-muted);
-  min-width: 120px;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-text-dim);
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  padding-left: 0;
 }
 
 .day-col {
@@ -96,8 +125,11 @@ const emit = defineEmits<{
 
 .day-name {
   display: block;
-  font-size: 0.7rem;
-  color: var(--app-text-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--app-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .day-num {
@@ -109,20 +141,28 @@ const emit = defineEmits<{
 .task-name {
   text-align: left;
   font-weight: 500;
-  max-width: 200px;
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding-left: 0;
 }
 
 .cell {
   cursor: pointer;
 }
 
+.cell.disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .square {
   width: 20px;
   height: 20px;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--app-surface-2);
   border: 1px solid var(--app-border);
   margin: 0 auto;
@@ -130,11 +170,11 @@ const emit = defineEmits<{
 }
 
 .square.filled {
-  background: #16a34a;
-  border-color: #16a34a;
+  background: var(--app-text);
+  border-color: var(--app-text);
 }
 
-.cell:hover .square:not(.filled) {
+.cell:not(.disabled):hover .square:not(.filled) {
   border-color: var(--app-border-hover);
   background: var(--app-surface-3);
 }

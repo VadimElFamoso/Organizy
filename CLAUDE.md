@@ -8,23 +8,59 @@ Always use pnpm for package management.
 
 Full-stack personal organization app with Vue 3 frontend + FastAPI backend + PostgreSQL. Companion to Skillzy.
 
+## Language
+
+- **All user-facing text must be in French.** The target audience is French-speaking.
+- Backend API responses (error messages, etc.) can stay in English.
+- Code, comments, variable names stay in English.
+
 ## Core Features
 
 - **Daily Tasks**: Recurring tasks with completion tracking, year dot calendar, regularity graphs
 - **Workouts**: Log workouts with type/duration/notes, calendar view, streaks
 - **Kanban Todos**: Priority-based boards (Urgent/High/Medium/Low) with drag & drop
-- **Dashboard**: Aggregated view of today's tasks, year calendar, workout summary, top todos
+- **Dashboard**: Aggregated view of today's tasks, year progression dots, workout summary, top todos
 - **Auth**: Google OAuth with httpOnly cookie sessions
 - **Payments**: Stripe (in codebase but no features are gated — all users have full access)
 
-## Theme
+## Design System & Style
 
-Light beige/white/gray palette. CSS variables defined in `src/App.vue` and `src/style.css`:
-- `--app-bg: #faf8f5` (warm off-white)
-- `--app-surface: #ffffff` (white cards)
-- `--app-surface-2: #f5f2ed` (light beige)
-- `--app-text: #1a1815` (near-black warm)
-- `--theme-accent: #78716c` (muted warm gray)
+### Visual Identity
+- **Tone**: Warm, calm, minimal. Inspired by Todoist — emotional headlines, two-column hero with product preview, feature blocks with check lists.
+- **Typography**: System font stack (`system-ui, -apple-system, sans-serif`). Headlines are bold (700-800 weight) with tight letter-spacing (-0.02 to -0.035em). Body text is 0.88-1rem.
+- **Layout**: Max-width 1200px for landing, 1300px for dashboard. Generous padding (80-88px vertical sections).
+- **Interactions**: Subtle hover transitions (0.15s). Feature icon boxes scale on hover. Buttons darken.
+
+### Color Palette (CSS variables in `src/App.vue` and `src/style.css`)
+```
+--app-bg: #faf8f5           warm off-white (page background)
+--app-surface: #ffffff       white (cards, product previews)
+--app-surface-2: #f5f2ed     light beige (secondary surfaces, testimonial bar)
+--app-surface-3: #ebe7e0     darker beige (badges, backgrounds)
+--app-border: #e2ddd5        warm gray (borders, dividers)
+--app-border-hover: #d4cec5  darker border (hover states, step lines)
+--app-text: #1a1815          near-black warm (headlines, primary text, filled dots)
+--app-text-muted: #78716c    warm gray (body text, descriptions)
+--app-text-dim: #a8a29e      light gray (stats, footnotes, labels)
+--theme-accent: #78716c      muted warm gray (icons, logo accent)
+--theme-accent-hover: #57534e darker warm gray (button hover, feature text)
+```
+
+### Landing Page Pattern (HomePage.vue)
+- **Nav**: Logo left, center nav links, CTA button right
+- **Hero**: Two-column — emotional headline + subtitle + CTA left, fake product UI (macOS-style window) right
+- **Testimonial bar**: Italic quote on beige background
+- **Features**: Alternating left/right blocks with tag label, headline, description, checklist, icon box
+- **How it works**: 3 numbered steps with connecting lines
+- **Bottom CTA**: Dark card (inverted colors) with headline + button
+- **Footer**: Logo left, Skillzy link right
+
+### Component Patterns
+- All pages use `var(--app-*)` variables — never hardcoded hex in app pages
+- Landing page uses scoped styles with hardcoded hex only as fallback
+- Dashboard/app pages use `AppNavbar` component
+- Cards: `background: var(--app-surface)`, `border: 1px solid var(--app-border)`, `border-radius: 12px`
+- Labels: uppercase, 0.68-0.72rem, letter-spacing 0.05-0.06em, `var(--app-text-dim)`
 
 ## Local Development
 
@@ -60,6 +96,7 @@ uv run launchpad db reset     # Reset database
 - Components are in `src/components/ui/`
 - **NEVER modify files in `src/components/ui/`** - these are shadcn-vue components
 - Prefer shadcn styling over custom CSS
+- Use CSS variables for all colors — no hardcoded hex in app pages
 
 ## Key Backend Models
 

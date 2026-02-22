@@ -16,10 +16,10 @@ const emit = defineEmits<{
 const currentYear = ref(new Date().getFullYear())
 const currentMonth = ref(new Date().getMonth() + 1)
 
-const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December']
+const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 
-const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
 function prevMonth() {
   if (currentMonth.value === 1) {
@@ -117,7 +117,8 @@ onMounted(() => {
 
 .cal-title {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
 }
 
 .cal-grid {
@@ -128,9 +129,11 @@ onMounted(() => {
 
 .cal-day-name {
   text-align: center;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--app-text-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--app-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   padding: 4px 0;
 }
 

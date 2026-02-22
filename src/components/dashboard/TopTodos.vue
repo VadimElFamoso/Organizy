@@ -19,10 +19,10 @@ const priorityColors: Record<string, string> = {
   <div class="top-todos">
     <h3 class="section-title">
       <ListTodo :size="18" />
-      Top Todos
+      Tâches prioritaires
     </h3>
     <div v-if="todos.length === 0" class="empty">
-      <p>No active todos. All clear!</p>
+      <p>Aucune tâche active. Tout est en ordre !</p>
     </div>
     <div v-else class="todo-list">
       <div v-for="todo in todos" :key="todo.id" class="todo-item">
@@ -47,14 +47,12 @@ const priorityColors: Record<string, string> = {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: 0.72rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   margin: 0 0 16px;
-  color: var(--app-text);
-}
-
-.section-title svg {
-  color: var(--theme-accent);
+  color: var(--app-text-dim);
 }
 
 .empty {

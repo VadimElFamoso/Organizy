@@ -1,20 +1,23 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+Priority = Literal["urgent", "high", "medium", "low"]
 
 
 class TodoCreate(BaseModel):
-    title: str
-    description: str | None = None
-    priority: str = "medium"  # urgent, high, medium, low
+    title: str = Field(max_length=500)
+    description: str | None = Field(default=None, max_length=5000)
+    priority: Priority = "medium"
     sort_order: int = 0
 
 
 class TodoUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    priority: str | None = None
+    title: str | None = Field(default=None, max_length=500)
+    description: str | None = Field(default=None, max_length=5000)
+    priority: Priority | None = None
     is_done: bool | None = None
     sort_order: int | None = None
 
@@ -33,14 +36,14 @@ class TodoResponse(BaseModel):
 
 
 class BulkDeleteRequest(BaseModel):
-    ids: list[UUID]
+    ids: list[UUID] = Field(max_length=500)
 
 
 class ReorderItem(BaseModel):
     id: UUID
-    priority: str
+    priority: Priority
     sort_order: int
 
 
 class ReorderRequest(BaseModel):
-    items: list[ReorderItem]
+    items: list[ReorderItem] = Field(max_length=500)

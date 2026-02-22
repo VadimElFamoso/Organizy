@@ -16,6 +16,7 @@ import {
   Loader2,
   ExternalLink,
   LogOut,
+  ArrowLeft,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -44,7 +45,7 @@ onMounted(async () => {
 
   const paymentStatus = route.query.payment as string
   if (paymentStatus === 'success') {
-    showToast('Payment successful! Welcome to Pro.', 'success')
+    showToast('Paiement réussi ! Bienvenue sur Pro.', 'success')
     router.replace({ path: '/settings' })
   }
 
@@ -64,7 +65,7 @@ async function manageSubscription() {
     window.location.href = portal_url
   } catch (error) {
     console.error('Failed to open portal:', error)
-    showToast('Failed to open billing portal. Please try again.', 'error')
+    showToast('Impossible d\'ouvrir le portail de facturation. Veuillez réessayer.', 'error')
     isManaging.value = false
   }
 }
@@ -76,7 +77,7 @@ async function handleLogout() {
 
 function formatDate(dateString?: string) {
   if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -86,13 +87,7 @@ function formatDate(dateString?: string) {
 
 <template>
   <div class="settings-page">
-    <AppNavbar
-      mode="settings"
-      :user="user"
-      show-back-button
-      @logout="handleLogout"
-      @back="router.push('/dashboard')"
-    />
+    <AppNavbar mode="dashboard" :user="user" @logout="handleLogout" />
 
     <main class="content">
       <div v-if="isLoading" class="loading">
@@ -100,13 +95,20 @@ function formatDate(dateString?: string) {
       </div>
 
       <div v-else-if="user" class="settings-content">
-        <h1>Account Settings</h1>
+        <div class="page-header">
+          <div class="page-header-left">
+            <button class="back-btn" @click="router.back()">
+              <ArrowLeft :size="18" />
+            </button>
+            <h1>Paramètres du compte</h1>
+          </div>
+        </div>
 
         <!-- Profile Section -->
         <section class="section">
           <h2>
             <User :size="20" />
-            Profile
+            Profil
           </h2>
           <div class="card">
             <div class="profile-info">
@@ -131,13 +133,13 @@ function formatDate(dateString?: string) {
         <section class="section">
           <h2>
             <CreditCard :size="20" />
-            Subscription
+            Abonnement
           </h2>
           <div class="card">
             <div class="subscription-header">
               <div class="subscription-plan">
                 <Crown :size="20" class="crown-icon" />
-                <span class="plan-name">Pro Plan</span>
+                <span class="plan-name">Plan Pro</span>
                 <span :class="['status-badge', statusColor]">{{ statusLabel }}</span>
               </div>
             </div>
@@ -145,25 +147,25 @@ function formatDate(dateString?: string) {
             <div v-if="isTrialing" class="subscription-detail">
               <Clock :size="16" />
               <span>
-                <strong>{{ trialDaysRemaining }} days</strong> remaining in your trial.
+                <strong>{{ trialDaysRemaining }} jours</strong> restants dans votre essai.
               </span>
             </div>
 
             <div v-else-if="isCanceled" class="subscription-detail canceled">
               <Clock :size="16" />
               <span>
-                Your subscription is canceled. Access ends on <strong>{{ formatDate(user?.subscription_end_date) }}</strong>.
+                Votre abonnement est annulé. L'accès se termine le <strong>{{ formatDate(user?.subscription_end_date) }}</strong>.
               </span>
             </div>
 
             <div v-else-if="needsSubscription" class="subscription-detail expired">
               <Clock :size="16" />
-              <span>Start a free trial to access all features.</span>
+              <span>Commencez un essai gratuit pour accéder à toutes les fonctionnalités.</span>
             </div>
 
             <div v-if="isActive && subscription?.end_date" class="subscription-detail">
               <Calendar :size="16" />
-              <span>Renews on {{ formatDate(subscription.end_date) }}</span>
+              <span>Renouvellement le {{ formatDate(subscription.end_date) }}</span>
             </div>
 
             <div class="subscription-actions">
@@ -175,13 +177,13 @@ function formatDate(dateString?: string) {
               >
                 <Loader2 v-if="isManaging" :size="16" class="spinner" />
                 <ExternalLink v-else :size="16" />
-                Manage Subscription
+                Gérer l'abonnement
               </Button>
 
               <RouterLink v-if="needsSubscription || isCanceled" to="/pricing" class="subscribe-link">
                 <Button class="subscribe-btn">
                   <Crown :size="16" />
-                  {{ isCanceled ? 'Resubscribe' : 'Start Free Trial' }}
+                  {{ isCanceled ? 'Se réabonner' : 'Commencer l\'essai gratuit' }}
                 </Button>
               </RouterLink>
             </div>
@@ -196,11 +198,11 @@ function formatDate(dateString?: string) {
           </h2>
           <div class="card">
             <p class="card-description">
-              Sign out of your account on this device.
+              Déconnectez-vous de votre compte sur cet appareil.
             </p>
             <Button variant="outline" class="logout-btn" @click="handleLogout">
               <LogOut :size="16" />
-              Sign Out
+              Déconnexion
             </Button>
           </div>
         </section>
@@ -214,14 +216,14 @@ function formatDate(dateString?: string) {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--app-surface);
+  background: var(--app-bg);
   color: var(--app-text);
 }
 
 .content {
   max-width: 600px;
   margin: 0 auto;
-  padding: 48px 24px;
+  padding: 40px 24px;
 }
 
 .loading {
@@ -239,10 +241,43 @@ function formatDate(dateString?: string) {
   to { transform: rotate(360deg); }
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  cursor: pointer;
+  color: var(--app-text-muted);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.back-btn:hover {
+  border-color: var(--app-border-hover);
+  color: var(--app-text);
+}
+
 .settings-content h1 {
   font-size: 1.75rem;
-  font-weight: 600;
-  margin: 0 0 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
 .section {
@@ -253,14 +288,16 @@ function formatDate(dateString?: string) {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--app-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   margin: 0 0 12px;
 }
 
 .card {
-  background: var(--app-surface-2);
+  background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 12px;
   padding: 20px;

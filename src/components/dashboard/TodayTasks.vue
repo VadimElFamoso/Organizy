@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { CalendarCheck } from 'lucide-vue-next'
-import { Checkbox } from '@/components/ui/checkbox'
+import { CalendarCheck, Check } from 'lucide-vue-next'
 import type { TodayTaskItem } from '@/services/api'
 
 defineProps<{
@@ -16,24 +15,24 @@ const emit = defineEmits<{
   <div class="today-tasks">
     <h3 class="section-title">
       <CalendarCheck :size="18" />
-      Today's Tasks
+      Tâches du jour
     </h3>
     <div v-if="tasks.length === 0" class="empty">
-      <p>No active tasks. Add some in Daily Tasks.</p>
+      <p>Aucune tâche active. Ajoutez-en dans Tâches quotidiennes.</p>
     </div>
     <div v-else class="task-list">
-      <label
+      <div
         v-for="item in tasks"
         :key="item.task.id"
         class="task-item"
         :class="{ completed: item.completed }"
+        @click="emit('toggle', item.task.id)"
       >
-        <Checkbox
-          :checked="item.completed"
-          @update:checked="emit('toggle', item.task.id)"
-        />
+        <div class="square" :class="{ filled: item.completed }">
+          <Check v-if="item.completed" :size="14" class="check-icon" />
+        </div>
         <span class="task-name">{{ item.task.name }}</span>
-      </label>
+      </div>
     </div>
   </div>
 </template>
@@ -50,14 +49,12 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: 0.72rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   margin: 0 0 16px;
-  color: var(--app-text);
-}
-
-.section-title svg {
-  color: var(--theme-accent);
+  color: var(--app-text-dim);
 }
 
 .empty {
@@ -96,7 +93,33 @@ const emit = defineEmits<{
 }
 
 .task-item.completed .task-name {
-  text-decoration: line-through;
   color: var(--app-text-muted);
+}
+
+.square {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
+  flex-shrink: 0;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.square.filled {
+  background: var(--app-text);
+  border-color: var(--app-text);
+}
+
+.check-icon {
+  color: var(--app-surface);
+}
+
+.task-item:hover .square:not(.filled) {
+  border-color: var(--app-border-hover);
+  background: var(--app-surface-3);
 }
 </style>

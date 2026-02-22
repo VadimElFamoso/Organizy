@@ -26,10 +26,10 @@ const chartData = computed(() => ({
   }),
   datasets: [
     {
-      label: 'Completed',
+      label: 'Complétées',
       data: props.days.map(d => d.completed),
-      borderColor: '#16a34a',
-      backgroundColor: 'rgba(22, 163, 74, 0.1)',
+      borderColor: '#1a1815',
+      backgroundColor: 'rgba(26, 24, 21, 0.06)',
       fill: true,
       tension: 0.3,
       pointRadius: 2,

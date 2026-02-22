@@ -23,14 +23,14 @@ onMounted(async () => {
     <div class="callback-card">
       <template v-if="!failed">
         <Loader2 class="spinner" :size="48" />
-        <h2>Signing you in...</h2>
-        <p>Please wait while we complete your authentication.</p>
+        <h2>Connexion en cours...</h2>
+        <p>Veuillez patienter pendant que nous finalisons votre connexion.</p>
       </template>
       <template v-else>
         <div class="error-icon">!</div>
-        <h2>Authentication Failed</h2>
-        <p>{{ error || 'Something went wrong. Please try again.' }}</p>
-        <p class="redirect-notice">Redirecting to home page...</p>
+        <h2>Échec de l'authentification</h2>
+        <p>{{ error || 'Une erreur est survenue. Veuillez réessayer.' }}</p>
+        <p class="redirect-notice">Redirection vers la page d'accueil...</p>
       </template>
     </div>
   </div>

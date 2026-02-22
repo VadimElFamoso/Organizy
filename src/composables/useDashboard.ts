@@ -6,7 +6,7 @@ const isLoading = ref(false)
 
 export function useDashboard() {
   async function fetchDashboard() {
-    isLoading.value = true
+    if (!dashboard.value) isLoading.value = true
     try {
       dashboard.value = await api.getDashboard()
     } finally {

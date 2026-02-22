@@ -14,10 +14,10 @@ const emit = defineEmits<{
 }>()
 
 const columns = [
+  { title: 'Basse', priority: 'low' },
+  { title: 'Moyenne', priority: 'medium' },
+  { title: 'Haute', priority: 'high' },
   { title: 'Urgent', priority: 'urgent' },
-  { title: 'High', priority: 'high' },
-  { title: 'Medium', priority: 'medium' },
-  { title: 'Low', priority: 'low' },
 ]
 
 function getColumnItems(priority: string): TodoItem[] {

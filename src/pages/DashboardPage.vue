@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useDashboard } from '@/composables/useDashboard'
-import { api } from '@/services/api'
+import { useDailyTasks } from '@/composables/useDailyTasks'
 import AppNavbar from '@/components/layout/AppNavbar.vue'
 import TodayTasks from '@/components/dashboard/TodayTasks.vue'
 import DotYearCalendar from '@/components/dashboard/DotYearCalendar.vue'
@@ -14,6 +14,7 @@ import { Loader2 } from 'lucide-vue-next'
 const router = useRouter()
 const { user, isAuthenticated, logout } = useAuth()
 const { dashboard, isLoading, fetchDashboard } = useDashboard()
+const { toggleCompletion } = useDailyTasks()
 
 onMounted(async () => {
   if (!isAuthenticated.value) {
@@ -24,9 +25,20 @@ onMounted(async () => {
 })
 
 async function handleToggleTask(taskId: string) {
-  const today = new Date().toISOString().slice(0, 10)
-  await api.toggleCompletion(taskId, today)
-  await fetchDashboard()
+  const d = new Date()
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  // Optimistic update for instant UI feedback
+  if (dashboard.value) {
+    const task = dashboard.value.today_tasks.find(t => t.task.id === taskId)
+    if (task) task.completed = !task.completed
+  }
+
+  try {
+    await toggleCompletion(taskId, today)
+  } finally {
+    await fetchDashboard()
+  }
 }
 
 async function handleLogout() {
@@ -46,13 +58,13 @@ async function handleLogout() {
 
       <template v-else-if="dashboard">
         <div class="page-header">
-          <h1 class="page-title">Dashboard</h1>
-          <span class="current-date">{{ new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</span>
+          <h1 class="page-title">Tableau de bord</h1>
+          <span class="current-date">{{ new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</span>
         </div>
 
         <div class="dashboard-grid">
           <div class="year-column-card">
-            <h3 class="year-title">Year Progression</h3>
+            <h3 class="year-title">Progression annuelle</h3>
             <DotYearCalendar :year="new Date().getFullYear()" />
           </div>
           <div class="grid-main">
@@ -102,20 +114,22 @@ async function handleLogout() {
 
 .page-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .current-date {
-  font-size: 0.9rem;
-  color: var(--app-text-muted);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--app-text);
 }
 
 .dashboard-grid {
@@ -135,12 +149,12 @@ async function handleLogout() {
 }
 
 .year-title {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  color: var(--app-text-muted);
+  color: var(--app-text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 12px;
+  letter-spacing: 0.06em;
+  margin: 0 0 14px;
   white-space: nowrap;
 }
 

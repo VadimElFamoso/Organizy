@@ -58,14 +58,14 @@ const priorityColors: Record<string, string> = {
     <div v-if="showAdd" class="add-form">
       <Input
         v-model="newTitle"
-        placeholder="Task title..."
+        placeholder="Titre de la tâche..."
         size="sm"
         @keyup.enter="handleAdd"
         @keyup.escape="showAdd = false"
       />
       <div class="add-actions">
-        <Button size="sm" @click="handleAdd" :disabled="!newTitle.trim()">Add</Button>
-        <Button variant="ghost" size="sm" @click="showAdd = false">Cancel</Button>
+        <Button size="sm" @click="handleAdd" :disabled="!newTitle.trim()">Ajouter</Button>
+        <Button variant="ghost" size="sm" @click="showAdd = false">Annuler</Button>
       </div>
     </div>
 
@@ -120,17 +120,20 @@ const priorityColors: Record<string, string> = {
 }
 
 .column-title {
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  text-transform: capitalize;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-text-dim);
 }
 
 .column-count {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--app-text-muted);
   background: var(--app-surface-3);
   padding: 1px 6px;
   border-radius: 10px;
+  font-weight: 500;
 }
 
 .add-form {

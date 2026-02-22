@@ -5,12 +5,18 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.workout import Workout
+from app.models.workout_exercise import WorkoutExercise
+from app.models.workout_preset import WorkoutPreset, WorkoutPresetExercise
 from app.schemas.workout import (
+    PresetCreate,
+    PresetResponse,
+    PresetUpdate,
     WorkoutCalendarDay,
     WorkoutCreate,
     WorkoutResponse,
@@ -31,12 +37,13 @@ async def list_workouts(
 ):
     result = await db.execute(
         select(Workout)
+        .options(selectinload(Workout.exercises))
         .where(Workout.user_id == current_user.id)
         .order_by(Workout.workout_date.desc(), Workout.created_at.desc())
         .limit(limit)
         .offset(offset)
     )
-    return result.scalars().all()
+    return result.scalars().unique().all()
 
 
 @router.post("/", response_model=WorkoutResponse, status_code=201)
@@ -45,11 +52,153 @@ async def create_workout(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    workout = Workout(user_id=current_user.id, **data.model_dump())
+    workout_date = data.workout_date or date.today()
+    workout = Workout(
+        user_id=current_user.id,
+        workout_type=data.workout_type,
+        notes=data.notes,
+        workout_date=workout_date,
+        duration_minutes=data.duration_minutes,
+    )
     db.add(workout)
+    await db.flush()
+
+    for ex in data.exercises:
+        exercise = WorkoutExercise(
+            workout_id=workout.id,
+            name=ex.name,
+            notes=ex.notes,
+            sort_order=ex.sort_order,
+        )
+        db.add(exercise)
+
     await db.commit()
-    await db.refresh(workout)
-    return workout
+
+    # Reload with exercises
+    result = await db.execute(
+        select(Workout)
+        .options(selectinload(Workout.exercises))
+        .where(Workout.id == workout.id)
+    )
+    return result.scalars().unique().one()
+
+
+# ---------------------------------------------------------------------------
+# Presets
+# ---------------------------------------------------------------------------
+
+
+@router.get("/presets", response_model=list[PresetResponse])
+async def list_presets(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(WorkoutPreset)
+        .options(selectinload(WorkoutPreset.exercises))
+        .where(WorkoutPreset.user_id == current_user.id)
+        .order_by(WorkoutPreset.created_at.desc())
+    )
+    return result.scalars().unique().all()
+
+
+@router.post("/presets", response_model=PresetResponse, status_code=201)
+async def create_preset(
+    data: PresetCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    preset = WorkoutPreset(
+        user_id=current_user.id,
+        name=data.name,
+        workout_type=data.workout_type,
+        duration_minutes=data.duration_minutes,
+    )
+    db.add(preset)
+    await db.flush()
+
+    for ex in data.exercises:
+        exercise = WorkoutPresetExercise(
+            preset_id=preset.id,
+            name=ex.name,
+            notes=ex.notes,
+            sort_order=ex.sort_order,
+        )
+        db.add(exercise)
+
+    await db.commit()
+
+    result = await db.execute(
+        select(WorkoutPreset)
+        .options(selectinload(WorkoutPreset.exercises))
+        .where(WorkoutPreset.id == preset.id)
+    )
+    return result.scalars().unique().one()
+
+
+@router.put("/presets/{preset_id}", response_model=PresetResponse)
+async def update_preset(
+    preset_id: UUID,
+    data: PresetUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(WorkoutPreset)
+        .options(selectinload(WorkoutPreset.exercises))
+        .where(
+            WorkoutPreset.id == preset_id,
+            WorkoutPreset.user_id == current_user.id,
+        )
+    )
+    preset = result.scalars().unique().one_or_none()
+    if not preset:
+        raise HTTPException(status_code=404, detail="Preset not found")
+
+    update_data = data.model_dump(exclude_unset=True, exclude={"exercises"})
+    for field, value in update_data.items():
+        setattr(preset, field, value)
+
+    if data.exercises is not None:
+        for ex in list(preset.exercises):
+            await db.delete(ex)
+        await db.flush()
+        for ex in data.exercises:
+            exercise = WorkoutPresetExercise(
+                preset_id=preset.id,
+                name=ex.name,
+                notes=ex.notes,
+                sort_order=ex.sort_order,
+            )
+            db.add(exercise)
+
+    await db.commit()
+
+    result = await db.execute(
+        select(WorkoutPreset)
+        .options(selectinload(WorkoutPreset.exercises))
+        .where(WorkoutPreset.id == preset.id)
+    )
+    return result.scalars().unique().one()
+
+
+@router.delete("/presets/{preset_id}", status_code=204)
+async def delete_preset(
+    preset_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(WorkoutPreset).where(
+            WorkoutPreset.id == preset_id,
+            WorkoutPreset.user_id == current_user.id,
+        )
+    )
+    preset = result.scalar_one_or_none()
+    if not preset:
+        raise HTTPException(status_code=404, detail="Preset not found")
+    await db.delete(preset)
+    await db.commit()
 
 
 @router.patch("/{workout_id}", response_model=WorkoutResponse)
@@ -60,21 +209,47 @@ async def update_workout(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Workout).where(
+        select(Workout)
+        .options(selectinload(Workout.exercises))
+        .where(
             Workout.id == workout_id,
             Workout.user_id == current_user.id,
         )
     )
-    workout = result.scalar_one_or_none()
+    workout = result.scalars().unique().one_or_none()
     if not workout:
         raise HTTPException(status_code=404, detail="Workout not found")
 
-    for field, value in data.model_dump(exclude_unset=True).items():
+    update_data = data.model_dump(exclude_unset=True, exclude={"exercises"})
+    for field, value in update_data.items():
         setattr(workout, field, value)
 
+    # Replace exercises if provided
+    if data.exercises is not None:
+        # Delete existing exercises
+        for ex in list(workout.exercises):
+            await db.delete(ex)
+        await db.flush()
+
+        # Insert new exercises
+        for ex in data.exercises:
+            exercise = WorkoutExercise(
+                workout_id=workout.id,
+                name=ex.name,
+                notes=ex.notes,
+                sort_order=ex.sort_order,
+            )
+            db.add(exercise)
+
     await db.commit()
-    await db.refresh(workout)
-    return workout
+
+    # Reload with exercises
+    result = await db.execute(
+        select(Workout)
+        .options(selectinload(Workout.exercises))
+        .where(Workout.id == workout.id)
+    )
+    return result.scalars().unique().one()
 
 
 @router.delete("/{workout_id}", status_code=204)
@@ -96,6 +271,24 @@ async def delete_workout(
     await db.commit()
 
 
+@router.get("/by-date", response_model=list[WorkoutResponse])
+async def get_workouts_by_date(
+    workout_date: date = Query(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Workout)
+        .options(selectinload(Workout.exercises))
+        .where(
+            Workout.user_id == current_user.id,
+            Workout.workout_date == workout_date,
+        )
+        .order_by(Workout.created_at.desc())
+    )
+    return result.scalars().unique().all()
+
+
 @router.get("/summary", response_model=WorkoutSummary)
 async def get_workout_summary(
     current_user: User = Depends(get_current_user),
@@ -110,11 +303,12 @@ async def get_workout_summary(
     # Last workout
     last_result = await db.execute(
         select(Workout)
+        .options(selectinload(Workout.exercises))
         .where(Workout.user_id == current_user.id)
         .order_by(Workout.workout_date.desc())
         .limit(1)
     )
-    last_workout = last_result.scalar_one_or_none()
+    last_workout = last_result.scalars().unique().one_or_none()
 
     # Calculate streak (consecutive days with workouts ending today or yesterday)
     streak = 0
@@ -151,7 +345,7 @@ async def get_workout_summary(
 
 @router.get("/calendar", response_model=list[WorkoutCalendarDay])
 async def get_workout_calendar(
-    year: int = Query(...),
+    year: int = Query(..., ge=2020, le=2100),
     month: int = Query(..., ge=1, le=12),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.models.monthly_usage import MonthlyUsage
     from app.models.todo_item import TodoItem
     from app.models.workout import Workout
+    from app.models.workout_preset import WorkoutPreset
 
 
 class UserPreferencesDict(TypedDict, total=False):
@@ -88,6 +89,10 @@ class User(Base, TimestampMixin):
         cascade="all, delete-orphan",
     )
     todo_items: Mapped[list[TodoItem]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    workout_presets: Mapped[list[WorkoutPreset]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

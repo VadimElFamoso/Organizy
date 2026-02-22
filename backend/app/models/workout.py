@@ -11,6 +11,7 @@ from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.workout_exercise import WorkoutExercise
 
 
 class Workout(Base, TimestampMixin):
@@ -25,3 +26,8 @@ class Workout(Base, TimestampMixin):
 
     # Relationships
     user: Mapped[User] = relationship(back_populates="workouts")
+    exercises: Mapped[list[WorkoutExercise]] = relationship(
+        back_populates="workout",
+        cascade="all, delete-orphan",
+        order_by="WorkoutExercise.sort_order",
+    )

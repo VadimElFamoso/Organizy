@@ -36,11 +36,11 @@ const bannerType = computed(() => {
     <div class="banner-content">
       <LogIn :size="18" />
       <span>
-        <strong>Sign in</strong> to access all features
+        <strong>Connectez-vous</strong> pour accéder à toutes les fonctionnalités
       </span>
     </div>
     <Button size="sm" variant="outline" class="banner-btn" @click="loginWithGoogle()">
-      Sign in with Google
+      Se connecter avec Google
     </Button>
   </div>
 
@@ -49,11 +49,11 @@ const bannerType = computed(() => {
     <div class="banner-content">
       <Clock :size="18" />
       <span>
-        <strong>{{ trialDaysRemaining }} days</strong> left in your free trial
+        <strong>{{ trialDaysRemaining }} jours</strong> restants dans votre essai gratuit
       </span>
     </div>
     <RouterLink to="/settings" class="banner-link">
-      Manage subscription
+      Gérer l'abonnement
     </RouterLink>
   </div>
 
@@ -62,11 +62,11 @@ const bannerType = computed(() => {
     <div class="banner-content">
       <XCircle :size="18" />
       <span>
-        Your subscription is canceled. Access ends in <strong>{{ daysRemaining }} days</strong>.
+        Votre abonnement est annulé. L'accès se termine dans <strong>{{ daysRemaining }} jours</strong>.
       </span>
     </div>
     <RouterLink to="/pricing" class="banner-link">
-      Resubscribe
+      Se réabonner
     </RouterLink>
   </div>
 
@@ -75,11 +75,11 @@ const bannerType = computed(() => {
     <div class="banner-content">
       <AlertTriangle :size="18" />
       <span>
-        <strong>Payment failed.</strong> Update your payment method to continue.
+        <strong>Paiement échoué.</strong> Mettez à jour votre moyen de paiement pour continuer.
       </span>
     </div>
     <RouterLink to="/pricing" class="banner-link-urgent">
-      Update Payment
+      Mettre à jour le paiement
     </RouterLink>
   </div>
 
@@ -88,13 +88,13 @@ const bannerType = computed(() => {
     <div class="banner-content">
       <Crown :size="18" />
       <span>
-        <strong>Start your 7-day free trial</strong> to unlock all features
+        <strong>Commencez votre essai gratuit de 7 jours</strong> pour débloquer toutes les fonctionnalités
       </span>
     </div>
     <RouterLink to="/pricing">
       <Button size="sm" class="banner-btn-cta">
         <Sparkles :size="14" />
-        Start Free Trial
+        Essai gratuit
       </Button>
     </RouterLink>
   </div>
