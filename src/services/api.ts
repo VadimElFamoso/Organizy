@@ -69,6 +69,86 @@ export interface UserAnalytics {
   // Add your app-specific analytics fields here
 }
 
+// ==========================================================================
+// Organizy Types
+// ==========================================================================
+
+export interface DailyTask {
+  id: string
+  name: string
+  description?: string | null
+  is_active: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface Completion {
+  id: string
+  task_id: string
+  completed_date: string
+}
+
+export interface DayStats {
+  date: string
+  completed: number
+  total: number
+  ratio: number
+}
+
+export interface YearStats {
+  year: number
+  days: DayStats[]
+}
+
+export interface RangeStats {
+  start: string
+  end: string
+  days: DayStats[]
+}
+
+export interface WorkoutItem {
+  id: string
+  workout_type: string
+  notes?: string | null
+  workout_date: string
+  duration_minutes?: number | null
+  created_at: string
+}
+
+export interface WorkoutSummary {
+  total_workouts: number
+  current_streak: number
+  last_workout: WorkoutItem | null
+}
+
+export interface WorkoutCalendarDay {
+  date: string
+  count: number
+}
+
+export interface TodoItem {
+  id: string
+  title: string
+  description?: string | null
+  priority: string
+  is_done: boolean
+  done_at?: string | null
+  sort_order: number
+  created_at: string
+}
+
+export interface TodayTaskItem {
+  task: DailyTask
+  completed: boolean
+}
+
+export interface DashboardData {
+  today_tasks: TodayTaskItem[]
+  year_days: DayStats[]
+  workout_summary: WorkoutSummary
+  top_todos: TodoItem[]
+}
+
 interface SessionResponse {
   authenticated: boolean
   user: User | null
@@ -246,6 +326,145 @@ class ApiClient {
 
   async getUserAnalytics(): Promise<UserAnalytics> {
     return this.fetch<UserAnalytics>('/analytics/me')
+  }
+
+  // ==========================================================================
+  // Daily Tasks
+  // ==========================================================================
+
+  async getDailyTasks(): Promise<DailyTask[]> {
+    return this.fetch<DailyTask[]>('/daily-tasks/')
+  }
+
+  async createDailyTask(data: { name: string; description?: string; sort_order?: number }): Promise<DailyTask> {
+    return this.fetch<DailyTask>('/daily-tasks/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateDailyTask(id: string, data: Partial<{ name: string; description: string | null; is_active: boolean; sort_order: number }>): Promise<DailyTask> {
+    return this.fetch<DailyTask>(`/daily-tasks/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteDailyTask(id: string): Promise<void> {
+    return this.fetch(`/daily-tasks/${id}`, { method: 'DELETE' })
+  }
+
+  async toggleCompletion(taskId: string, date: string): Promise<Completion | null> {
+    return this.fetch<Completion | null>('/daily-tasks/completions/toggle', {
+      method: 'POST',
+      body: JSON.stringify({ task_id: taskId, date }),
+    })
+  }
+
+  async getCompletions(start: string, end: string): Promise<Completion[]> {
+    return this.fetch<Completion[]>(`/daily-tasks/completions?start=${start}&end=${end}`)
+  }
+
+  async getYearStats(year: number): Promise<YearStats> {
+    return this.fetch<YearStats>(`/daily-tasks/stats/year?year=${year}`)
+  }
+
+  async getRangeStats(start: string, end: string): Promise<RangeStats> {
+    return this.fetch<RangeStats>(`/daily-tasks/stats/range?start=${start}&end=${end}`)
+  }
+
+  // ==========================================================================
+  // Workouts
+  // ==========================================================================
+
+  async getWorkouts(limit = 50, offset = 0): Promise<WorkoutItem[]> {
+    return this.fetch<WorkoutItem[]>(`/workouts/?limit=${limit}&offset=${offset}`)
+  }
+
+  async createWorkout(data: { workout_type: string; notes?: string; workout_date: string; duration_minutes?: number }): Promise<WorkoutItem> {
+    return this.fetch<WorkoutItem>('/workouts/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateWorkout(id: string, data: Partial<{ workout_type: string; notes: string | null; workout_date: string; duration_minutes: number | null }>): Promise<WorkoutItem> {
+    return this.fetch<WorkoutItem>(`/workouts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteWorkout(id: string): Promise<void> {
+    return this.fetch(`/workouts/${id}`, { method: 'DELETE' })
+  }
+
+  async getWorkoutSummary(): Promise<WorkoutSummary> {
+    return this.fetch<WorkoutSummary>('/workouts/summary')
+  }
+
+  async getWorkoutCalendar(year: number, month: number): Promise<WorkoutCalendarDay[]> {
+    return this.fetch<WorkoutCalendarDay[]>(`/workouts/calendar?year=${year}&month=${month}`)
+  }
+
+  async getWorkoutTypes(): Promise<string[]> {
+    return this.fetch<string[]>('/workouts/types')
+  }
+
+  // ==========================================================================
+  // Todos
+  // ==========================================================================
+
+  async getTodos(): Promise<TodoItem[]> {
+    return this.fetch<TodoItem[]>('/todos/')
+  }
+
+  async getDoneTodos(limit = 50, offset = 0): Promise<TodoItem[]> {
+    return this.fetch<TodoItem[]>(`/todos/done?limit=${limit}&offset=${offset}`)
+  }
+
+  async createTodo(data: { title: string; description?: string; priority?: string; sort_order?: number }): Promise<TodoItem> {
+    return this.fetch<TodoItem>('/todos/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateTodo(id: string, data: Partial<{ title: string; description: string | null; priority: string; is_done: boolean; sort_order: number }>): Promise<TodoItem> {
+    return this.fetch<TodoItem>(`/todos/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteTodo(id: string): Promise<void> {
+    return this.fetch(`/todos/${id}`, { method: 'DELETE' })
+  }
+
+  async bulkDeleteTodos(ids: string[]): Promise<void> {
+    return this.fetch('/todos/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
+  }
+
+  async reorderTodos(items: { id: string; priority: string; sort_order: number }[]): Promise<void> {
+    return this.fetch('/todos/reorder', {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    })
+  }
+
+  async getTopTodos(limit = 5): Promise<TodoItem[]> {
+    return this.fetch<TodoItem[]>(`/todos/top?limit=${limit}`)
+  }
+
+  // ==========================================================================
+  // Dashboard
+  // ==========================================================================
+
+  async getDashboard(): Promise<DashboardData> {
+    return this.fetch<DashboardData>('/dashboard/')
   }
 }
 

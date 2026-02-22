@@ -16,6 +16,7 @@ class MonthlyUsage(Base, TimestampMixin):
     """Track monthly usage for tier limits.
 
     Counters auto-reset when current_month changes (handled by usage_service).
+    Customize the counter fields below for your project.
     """
 
     __tablename__ = "monthly_usage"
@@ -31,10 +32,10 @@ class MonthlyUsage(Base, TimestampMixin):
     current_month: Mapped[str] = mapped_column(String(7))
 
     # Usage counters (customize these for your project)
-    presentations_created: Mapped[int] = mapped_column(Integer, default=0)
+    actions_used: Mapped[int] = mapped_column(Integer, default=0)
     exports_used: Mapped[int] = mapped_column(Integer, default=0)
-    assets_uploaded: Mapped[int] = mapped_column(Integer, default=0)
-    ai_messages_sent: Mapped[int] = mapped_column(Integer, default=0)
+    uploads_used: Mapped[int] = mapped_column(Integer, default=0)
+    api_calls_used: Mapped[int] = mapped_column(Integer, default=0)
 
     # Relationship
     user: Mapped[User] = relationship(back_populates="monthly_usage")

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/composables/useAuth'
 import { api, type PlanInfo, type SubscriptionInfo } from '@/services/api'
-import { Rocket, Check, ArrowLeft, Loader2, Clock, CreditCard, AlertTriangle } from 'lucide-vue-next'
+import { CalendarCheck, Check, ArrowLeft, Loader2, Clock, CreditCard, AlertTriangle } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
@@ -66,7 +66,7 @@ onMounted(async () => {
 
 function loginWithGoogle() {
   // Store intent to start trial after login
-  sessionStorage.setItem('launchpad_after_login', 'start_trial')
+  sessionStorage.setItem('organizy_after_login', 'start_trial')
   window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/auth/google/login`
 }
 
@@ -117,8 +117,8 @@ function getPrice(plan: PlanInfo) {
         Back
       </RouterLink>
       <div class="logo">
-        <Rocket :size="32" />
-        <span>Launchpad</span>
+        <CalendarCheck :size="32" />
+        <span>Organizy</span>
       </div>
       <div class="header-spacer"></div>
     </header>
@@ -193,7 +193,7 @@ function getPrice(plan: PlanInfo) {
           :key="plan.name"
           :class="['plan-card', { featured: plan.is_popular, unavailable: !plan.available }]"
         >
-          <Badge v-if="plan.is_popular" class="absolute -top-3 left-1/2 -translate-x-1/2 bg-pink-500 text-white border-0">
+          <Badge v-if="plan.is_popular" class="absolute -top-3 left-1/2 -translate-x-1/2 bg-stone-600 text-white border-0">
             7 Days Free
           </Badge>
           <Badge v-if="!plan.available" variant="secondary" class="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -308,8 +308,8 @@ function getPrice(plan: PlanInfo) {
 <style scoped>
 .pricing-page {
   min-height: 100vh;
-  background: #0a0a0b;
-  color: #fafafa;
+  background: var(--app-bg, #faf8f5);
+  color: var(--app-text, #1a1815);
 }
 
 /* Header */
@@ -318,21 +318,21 @@ function getPrice(plan: PlanInfo) {
   align-items: center;
   justify-content: space-between;
   padding: 20px 32px;
-  border-bottom: 1px solid #27272a;
+  border-bottom: 1px solid var(--app-border);
 }
 
 .back-link {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #a1a1aa;
+  color: var(--app-text-muted);
   text-decoration: none;
   font-size: 0.875rem;
   transition: color 0.2s;
 }
 
 .back-link:hover {
-  color: #fafafa;
+  color: var(--app-text);
 }
 
 .logo {
@@ -372,13 +372,13 @@ function getPrice(plan: PlanInfo) {
 
 .hero p {
   font-size: 1.125rem;
-  color: #71717a;
+  color: var(--app-text-muted);
   margin: 0 0 32px;
 }
 
 .billing-toggle {
   display: inline-flex;
-  background: #18181b;
+  background: var(--app-surface-2);
   border-radius: 8px;
   padding: 4px;
 }
@@ -386,7 +386,7 @@ function getPrice(plan: PlanInfo) {
 .billing-toggle button {
   background: transparent;
   border: none;
-  color: #71717a;
+  color: var(--app-text-muted);
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
@@ -398,8 +398,8 @@ function getPrice(plan: PlanInfo) {
 }
 
 .billing-toggle button.active {
-  background: #27272a;
-  color: #fafafa;
+  background: var(--app-surface-3);
+  color: var(--app-text);
 }
 
 .save-badge {
@@ -441,8 +441,8 @@ function getPrice(plan: PlanInfo) {
 .plan-card {
   max-width: 380px;
   width: 100%;
-  background: #111113;
-  border: 1px solid #27272a;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   border-radius: 16px;
   padding: 32px;
   position: relative;
@@ -452,7 +452,7 @@ function getPrice(plan: PlanInfo) {
 
 .plan-card.featured {
   border-color: var(--theme-accent);
-  background: linear-gradient(180deg, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
+  background: linear-gradient(180deg, rgba(120, 113, 108, 0.05) 0%, transparent 50%);
 }
 
 .plan-name {
@@ -470,7 +470,7 @@ function getPrice(plan: PlanInfo) {
 
 .currency {
   font-size: 1.25rem;
-  color: #71717a;
+  color: var(--app-text-muted);
 }
 
 .amount {
@@ -480,12 +480,12 @@ function getPrice(plan: PlanInfo) {
 
 .period {
   font-size: 1rem;
-  color: #71717a;
+  color: var(--app-text-muted);
 }
 
 .billed-yearly {
   font-size: 0.875rem;
-  color: #71717a;
+  color: var(--app-text-muted);
   margin: 0 0 24px;
 }
 
@@ -502,7 +502,7 @@ function getPrice(plan: PlanInfo) {
   gap: 12px;
   padding: 8px 0;
   font-size: 0.875rem;
-  color: #a1a1aa;
+  color: var(--app-text-muted);
 }
 
 .features-list li svg {
@@ -512,9 +512,9 @@ function getPrice(plan: PlanInfo) {
 
 .plan-button {
   width: 100%;
-  background: #27272a;
+  background: var(--app-surface-3);
   border: none;
-  color: #fafafa;
+  color: var(--app-text);
   padding: 12px;
   border-radius: 8px;
   font-weight: 500;
@@ -527,7 +527,7 @@ function getPrice(plan: PlanInfo) {
 }
 
 .plan-button:hover:not(:disabled) {
-  background: #3f3f46;
+  background: var(--app-border-hover);
 }
 
 .plan-button.featured {
@@ -540,7 +540,7 @@ function getPrice(plan: PlanInfo) {
 
 .plan-button.manage {
   background: transparent;
-  border: 1px solid #3f3f46;
+  border: 1px solid var(--app-border-hover);
 }
 
 .plan-button.past-due {
@@ -563,7 +563,7 @@ function getPrice(plan: PlanInfo) {
   max-width: 900px;
   margin: 0 auto;
   padding: 64px 32px;
-  border-top: 1px solid #27272a;
+  border-top: 1px solid var(--app-border);
 }
 
 .faq h2 {
@@ -586,7 +586,7 @@ function getPrice(plan: PlanInfo) {
 
 .faq-item p {
   font-size: 0.875rem;
-  color: #71717a;
+  color: var(--app-text-muted);
   margin: 0;
   line-height: 1.6;
 }
@@ -595,11 +595,11 @@ function getPrice(plan: PlanInfo) {
 .footer {
   text-align: center;
   padding: 32px;
-  border-top: 1px solid #27272a;
+  border-top: 1px solid var(--app-border);
 }
 
 .footer p {
-  color: #52525b;
+  color: var(--app-text-dim);
   margin: 0;
   font-size: 0.875rem;
 }

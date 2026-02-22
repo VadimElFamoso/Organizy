@@ -8,7 +8,7 @@ set -e
 echo "Starting Launchpad deployment..."
 
 # Configuration
-REPO_URL="https://github.com/lorisalx/launchpad.git"  # Update this!
+REPO_URL="https://github.com/YOUR_USERNAME/YOUR_REPO.git"  # Update this!
 PROD_DIR="/opt/launchpad"
 DEV_DIR="/opt/launchpad-dev"
 

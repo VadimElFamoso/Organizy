@@ -19,31 +19,31 @@ from app.models.user import SubscriptionPlan, User
 # None = unlimited, 0 = not allowed
 TIER_LIMITS = {
     SubscriptionPlan.FREE.value: {
-        "presentations": 1,
-        "ai_messages": 10,
+        "actions": 10,
+        "api_calls": 10,
         "exports": 0,  # Not allowed
-        "assets": 5,
+        "uploads": 5,
         "monthly_reset": False,  # All-time limits
     },
     SubscriptionPlan.STARTER.value: {
-        "presentations": 5,
-        "ai_messages": 100,
+        "actions": 50,
+        "api_calls": 100,
         "exports": None,  # Unlimited
-        "assets": None,  # Unlimited
+        "uploads": None,  # Unlimited
         "monthly_reset": True,
     },
     SubscriptionPlan.PRO.value: {
-        "presentations": 100,
-        "ai_messages": 1000,
+        "actions": 500,
+        "api_calls": 1000,
         "exports": None,  # Unlimited
-        "assets": None,  # Unlimited
+        "uploads": None,  # Unlimited
         "monthly_reset": True,
     },
     SubscriptionPlan.UNLIMITED.value: {
-        "presentations": None,  # Unlimited
-        "ai_messages": None,  # Unlimited
+        "actions": None,  # Unlimited
+        "api_calls": None,  # Unlimited
         "exports": None,  # Unlimited
-        "assets": None,  # Unlimited
+        "uploads": None,  # Unlimited
         "monthly_reset": True,
     },
 }
@@ -99,20 +99,20 @@ async def get_or_create_usage(
         usage = MonthlyUsage(
             user_id=user.id,
             current_month=month_value,
-            presentations_created=0,
+            actions_used=0,
             exports_used=0,
-            assets_uploaded=0,
-            ai_messages_sent=0,
+            uploads_used=0,
+            api_calls_used=0,
         )
         db.add(usage)
         await db.flush()
     elif should_reset and usage.current_month != current_month:
         # New month for paid tier - reset counters
         usage.current_month = current_month
-        usage.presentations_created = 0
+        usage.actions_used = 0
         usage.exports_used = 0
-        usage.assets_uploaded = 0
-        usage.ai_messages_sent = 0
+        usage.uploads_used = 0
+        usage.api_calls_used = 0
         await db.flush()
 
     return usage
@@ -128,7 +128,7 @@ async def check_limit(
     Args:
         db: Database session
         user: The user to check
-        resource: One of "presentations", "exports", "assets", "ai_messages"
+        resource: One of "actions", "exports", "uploads", "api_calls"
 
     Returns:
         (allowed, current_count, limit)
@@ -148,14 +148,14 @@ async def check_limit(
 
     usage = await get_or_create_usage(db, user, tier)
 
-    if resource == "presentations":
-        current = usage.presentations_created
+    if resource == "actions":
+        current = usage.actions_used
     elif resource == "exports":
         current = usage.exports_used
-    elif resource == "assets":
-        current = usage.assets_uploaded
-    elif resource == "ai_messages":
-        current = usage.ai_messages_sent
+    elif resource == "uploads":
+        current = usage.uploads_used
+    elif resource == "api_calls":
+        current = usage.api_calls_used
     else:
         raise ValueError(f"Unknown resource: {resource}")
 
@@ -172,7 +172,7 @@ async def increment_usage(
     Args:
         db: Database session
         user: The user
-        resource: One of "presentations", "exports", "assets", "ai_messages"
+        resource: One of "actions", "exports", "uploads", "api_calls"
     """
     tier = get_user_tier(user)
     tier_config = get_tier_limits(tier)
@@ -184,14 +184,14 @@ async def increment_usage(
 
     usage = await get_or_create_usage(db, user, tier)
 
-    if resource == "presentations":
-        usage.presentations_created += 1
+    if resource == "actions":
+        usage.actions_used += 1
     elif resource == "exports":
         usage.exports_used += 1
-    elif resource == "assets":
-        usage.assets_uploaded += 1
-    elif resource == "ai_messages":
-        usage.ai_messages_sent += 1
+    elif resource == "uploads":
+        usage.uploads_used += 1
+    elif resource == "api_calls":
+        usage.api_calls_used += 1
     else:
         raise ValueError(f"Unknown resource: {resource}")
 
@@ -217,10 +217,10 @@ async def get_usage_stats(
             "tier": tier,
             "is_pro": True,
             "monthly_reset": True,
-            "presentations": {"used": 0, "limit": 0, "remaining": -1},
+            "actions": {"used": 0, "limit": 0, "remaining": -1},
             "exports": {"used": 0, "limit": 0, "remaining": -1},
-            "assets": {"used": 0, "limit": 0, "remaining": -1},
-            "ai_messages": {"used": 0, "limit": 0, "remaining": -1},
+            "uploads": {"used": 0, "limit": 0, "remaining": -1},
+            "api_calls": {"used": 0, "limit": 0, "remaining": -1},
         }
 
     usage = await get_or_create_usage(db, user, tier)
@@ -240,16 +240,16 @@ async def get_usage_stats(
         "tier": tier,
         "is_pro": is_paid,
         "monthly_reset": tier_config.get("monthly_reset", False),
-        "presentations": make_usage_item(
-            usage.presentations_created, tier_config.get("presentations")
+        "actions": make_usage_item(
+            usage.actions_used, tier_config.get("actions")
         ),
         "exports": make_usage_item(
             usage.exports_used, tier_config.get("exports")
         ),
-        "assets": make_usage_item(
-            usage.assets_uploaded, tier_config.get("assets")
+        "uploads": make_usage_item(
+            usage.uploads_used, tier_config.get("uploads")
         ),
-        "ai_messages": make_usage_item(
-            usage.ai_messages_sent, tier_config.get("ai_messages")
+        "api_calls": make_usage_item(
+            usage.api_calls_used, tier_config.get("api_calls")
         ),
     }

@@ -4,23 +4,33 @@
 
 Always use pnpm for package management.
 
-## Project: Launchpad (SaaS Starter)
+## Project: Organizy (Personal Organization & Regularity Tracker)
 
-Full-stack SaaS starter with Vue 3 frontend + FastAPI backend + PostgreSQL.
+Full-stack personal organization app with Vue 3 frontend + FastAPI backend + PostgreSQL. Companion to Skillzy.
 
-## Features
+## Core Features
 
-- **Authentication**: Google OAuth with httpOnly cookie sessions
-- **Payments**: Stripe subscriptions with trials and customer portal
-- **User Management**: Profile, preferences, analytics
+- **Daily Tasks**: Recurring tasks with completion tracking, year dot calendar, regularity graphs
+- **Workouts**: Log workouts with type/duration/notes, calendar view, streaks
+- **Kanban Todos**: Priority-based boards (Urgent/High/Medium/Low) with drag & drop
+- **Dashboard**: Aggregated view of today's tasks, year calendar, workout summary, top todos
+- **Auth**: Google OAuth with httpOnly cookie sessions
+- **Payments**: Stripe (in codebase but no features are gated — all users have full access)
+
+## Theme
+
+Light beige/white/gray palette. CSS variables defined in `src/App.vue` and `src/style.css`:
+- `--app-bg: #faf8f5` (warm off-white)
+- `--app-surface: #ffffff` (white cards)
+- `--app-surface-2: #f5f2ed` (light beige)
+- `--app-text: #1a1815` (near-black warm)
+- `--theme-accent: #78716c` (muted warm gray)
 
 ## Local Development
 
 ```bash
-# Start everything with Docker
 docker-compose up
-
-# Or run separately:
+# Or separately:
 cd backend && uv run uvicorn app.main:app --reload --port 8000
 pnpm dev  # frontend on :5173
 ```
@@ -28,59 +38,20 @@ pnpm dev  # frontend on :5173
 ## CLI Tool
 
 ```bash
-# Install CLI
 uv sync
-
-# Setup wizard (generates .env files)
-uv run launchpad init
-
-# Development commands
+uv run launchpad init         # Setup wizard
 uv run launchpad dev          # Start local docker-compose
-uv run launchpad dev vps      # Start dev environment on VPS
-uv run launchpad prod         # Start production on VPS
-uv run launchpad down         # Stop all containers
-uv run launchpad logs         # Tail logs
-
-# Database commands
 uv run launchpad db migrate   # Run alembic migrations
 uv run launchpad db reset     # Reset database
-uv run launchpad db shell     # Open psql shell
 ```
-
-## Environment Variables (.env)
-
-Required variables:
-```
-POSTGRES_PASSWORD=secure-password
-GOOGLE_CLIENT_ID=xxx
-GOOGLE_CLIENT_SECRET=xxx
-JWT_SECRET_KEY=xxx (min 32 chars)
-
-# Stripe (required for payments/subscriptions)
-STRIPE_SECRET_KEY=sk_test_xxx
-STRIPE_WEBHOOK_SECRET=whsec_xxx
-STRIPE_PRICE_ID_STARTER_MONTHLY=price_xxx
-STRIPE_PRICE_ID_STARTER_YEARLY=price_xxx
-STRIPE_PRICE_ID_PRO_MONTHLY=price_xxx
-STRIPE_PRICE_ID_PRO_YEARLY=price_xxx
-STRIPE_PRICE_ID_UNLIMITED_MONTHLY=price_xxx
-STRIPE_PRICE_ID_UNLIMITED_YEARLY=price_xxx
-
-# URLs (set per environment)
-DOMAIN=launchpad.example.com
-FRONTEND_URL=https://launchpad.example.com
-GOOGLE_REDIRECT_URI=https://launchpad.example.com/api/v1/auth/google/callback
-```
-
-**Important**: All environment variables in `.env` must also be mapped in `docker-compose.*.yml` files under the `backend.environment` section.
 
 ## Architecture
 
 - **Frontend**: Vue 3 + Vite + TypeScript + TailwindCSS + shadcn-vue
 - **Backend**: FastAPI + SQLAlchemy + PostgreSQL
 - **Auth**: Google OAuth with JWT
-- **Payments**: Stripe
-- **Reverse Proxy**: Traefik (auto SSL)
+- **Drag & Drop**: vue-draggable-plus
+- **Charts**: chart.js + vue-chartjs
 
 ## Frontend Guidelines
 
@@ -90,11 +61,16 @@ GOOGLE_REDIRECT_URI=https://launchpad.example.com/api/v1/auth/google/callback
 - **NEVER modify files in `src/components/ui/`** - these are shadcn-vue components
 - Prefer shadcn styling over custom CSS
 
-## Key Files
+## Key Backend Models
 
-- `docker-compose.yml` - Local development
-- `docker-compose.dev.yml` - Dev VPS config
-- `docker-compose.prod.yml` - Production config
-- `backend/` - FastAPI app
-- `src/` - Vue frontend source
-- `cli/` - CLI tool for project management
+- `DailyTask` — Recurring tasks per user (soft delete via `is_active`)
+- `DailyTaskCompletion` — One per task per day, unique constraint `(task_id, completed_date)`
+- `Workout` — Workout log entries with type, date, duration
+- `TodoItem` — Kanban items with priority (urgent/high/medium/low) and sort_order
+
+## API Routes
+
+- `/api/v1/daily-tasks` — CRUD + toggle completions + stats
+- `/api/v1/workouts` — CRUD + summary + calendar + types
+- `/api/v1/todos` — CRUD + bulk delete + reorder + top
+- `/api/v1/dashboard` — Aggregated dashboard data

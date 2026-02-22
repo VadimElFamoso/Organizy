@@ -3,15 +3,13 @@ import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/composables/useAuth'
 import {
-  Rocket,
-  Shield,
-  CreditCard,
+  CalendarCheck,
+  Dumbbell,
+  ListTodo,
+  LayoutDashboard,
   ArrowRight,
-  Zap,
-  Code2,
-  Database,
-  BarChart3,
   Check,
+  Sparkles,
 } from 'lucide-vue-next'
 
 const { isAuthenticated, loginWithGoogle } = useAuth()
@@ -30,15 +28,12 @@ function handleCta() {
     <!-- Navbar -->
     <nav class="home-navbar">
       <RouterLink to="/" class="home-navbar-logo">
-        <Rocket :size="20" />
-        <span>Launchpad</span>
+        <CalendarCheck :size="20" />
+        <span>Organizy</span>
       </RouterLink>
       <div class="home-navbar-right">
         <RouterLink v-if="isAuthenticated" to="/dashboard">
           <Button size="sm" variant="ghost">Dashboard</Button>
-        </RouterLink>
-        <RouterLink to="/pricing">
-          <Button size="sm" variant="ghost">Pricing</Button>
         </RouterLink>
         <Button v-if="!isAuthenticated" size="sm" class="login-btn" @click="loginWithGoogle()">
           Sign In
@@ -50,26 +45,21 @@ function handleCta() {
     <header class="hero">
       <div class="hero-content">
         <div class="hero-badge">
-          <Zap :size="14" />
-          <span>SaaS Starter Kit</span>
+          <Sparkles :size="14" />
+          <span>Personal Organization</span>
         </div>
         <h1 class="hero-title">
-          Ship your SaaS
-          <span class="hero-gradient">in days, not months</span>
+          Stay organized,
+          <span class="hero-gradient">build regularity</span>
         </h1>
         <p class="hero-subtitle">
-          Authentication, payments, subscriptions, and everything you need to launch your SaaS product. Built with Vue 3, FastAPI, and PostgreSQL.
+          Track daily tasks, log workouts, organize todos with kanban boards, and visualize your consistency with a year calendar. The perfect complement to Skillzy.
         </p>
         <div class="hero-actions">
           <Button size="lg" class="primary-btn" @click="handleCta">
             {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}
             <ArrowRight :size="20" />
           </Button>
-          <RouterLink to="/pricing">
-            <Button size="lg" variant="outline" class="secondary-btn">
-              View Pricing
-            </Button>
-          </RouterLink>
         </div>
       </div>
     </header>
@@ -77,51 +67,37 @@ function handleCta() {
     <!-- Features Section -->
     <section class="features">
       <div class="features-header">
-        <h2>Everything you need to launch</h2>
-        <p>Focus on what makes your product unique. We handle the boring stuff.</p>
+        <h2>Everything you need to stay on track</h2>
+        <p>Simple tools to build habits, track progress, and get things done.</p>
       </div>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">
-            <Shield :size="24" />
+            <CalendarCheck :size="24" />
           </div>
-          <h3>Authentication</h3>
-          <p>Google OAuth with secure httpOnly cookie sessions. Ready to use, production-grade auth.</p>
+          <h3>Daily Tasks</h3>
+          <p>Define recurring tasks and track completions. See your consistency over time with graphs and tables.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">
-            <CreditCard :size="24" />
+            <Dumbbell :size="24" />
           </div>
-          <h3>Stripe Payments</h3>
-          <p>Multi-tier subscriptions, free trials, promotion codes, and customer portal built-in.</p>
+          <h3>Workout Tracking</h3>
+          <p>Log workouts with type, duration, and notes. View your activity on a calendar and track streaks.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">
-            <BarChart3 :size="24" />
+            <ListTodo :size="24" />
           </div>
-          <h3>Usage Tracking</h3>
-          <p>Per-user monthly usage limits with automatic resets. Enforce tier limits effortlessly.</p>
+          <h3>Kanban Todos</h3>
+          <p>Organize tasks by priority with drag-and-drop kanban boards. Urgent, high, medium, and low columns.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">
-            <Database :size="24" />
+            <LayoutDashboard :size="24" />
           </div>
-          <h3>PostgreSQL + Alembic</h3>
-          <p>SQLAlchemy async models with Alembic migrations. Schema changes made easy.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
-            <Code2 :size="24" />
-          </div>
-          <h3>Vue 3 + FastAPI</h3>
-          <p>Modern TypeScript frontend with shadcn-vue components. Python backend with auto-generated docs.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
-            <Rocket :size="24" />
-          </div>
-          <h3>Docker Deploy</h3>
-          <p>Multi-environment Docker Compose setup. Local, dev, and production configs included.</p>
+          <h3>Year Calendar</h3>
+          <p>Visualize your entire year at a glance with a dot calendar showing daily completion ratios.</p>
         </div>
       </div>
     </section>
@@ -129,23 +105,19 @@ function handleCta() {
     <!-- Included Section -->
     <section class="included">
       <div class="included-content">
-        <h2>What's included</h2>
+        <h2>What you get</h2>
         <div class="included-grid">
           <div class="included-column">
-            <div class="included-item"><Check :size="16" /> Google OAuth login</div>
-            <div class="included-item"><Check :size="16" /> JWT session management</div>
-            <div class="included-item"><Check :size="16" /> Stripe checkout integration</div>
-            <div class="included-item"><Check :size="16" /> Multi-tier pricing (Free/Starter/Pro/Unlimited)</div>
-            <div class="included-item"><Check :size="16" /> Free trial support</div>
-            <div class="included-item"><Check :size="16" /> Customer billing portal</div>
+            <div class="included-item"><Check :size="16" /> Recurring daily task management</div>
+            <div class="included-item"><Check :size="16" /> Completion tracking with date ranges</div>
+            <div class="included-item"><Check :size="16" /> Year dot calendar visualization</div>
+            <div class="included-item"><Check :size="16" /> Regularity line charts</div>
           </div>
           <div class="included-column">
-            <div class="included-item"><Check :size="16" /> Monthly usage tracking & limits</div>
-            <div class="included-item"><Check :size="16" /> Subscription status banners</div>
-            <div class="included-item"><Check :size="16" /> Settings page with profile</div>
-            <div class="included-item"><Check :size="16" /> Responsive mobile navigation</div>
-            <div class="included-item"><Check :size="16" /> Docker Compose (local/dev/prod)</div>
-            <div class="included-item"><Check :size="16" /> Traefik reverse proxy with auto SSL</div>
+            <div class="included-item"><Check :size="16" /> Workout logging with streaks</div>
+            <div class="included-item"><Check :size="16" /> Kanban board with drag & drop</div>
+            <div class="included-item"><Check :size="16" /> Priority-based todo organization</div>
+            <div class="included-item"><Check :size="16" /> Aggregated dashboard overview</div>
           </div>
         </div>
       </div>
@@ -153,8 +125,8 @@ function handleCta() {
 
     <!-- CTA Section -->
     <section class="cta">
-      <h2>Ready to build?</h2>
-      <p>Stop reinventing auth and payments. Start building your product today.</p>
+      <h2>Ready to get organized?</h2>
+      <p>Start tracking your habits and todos today. Free to use, no credit card required.</p>
       <Button size="lg" class="primary-btn" @click="handleCta">
         {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}
         <ArrowRight :size="20" />
@@ -165,10 +137,10 @@ function handleCta() {
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-logo">
-          <Rocket :size="16" />
-          <span>Launchpad</span>
+          <CalendarCheck :size="16" />
+          <span>Organizy</span>
         </div>
-        <p>Built with Vue 3 + FastAPI + PostgreSQL</p>
+        <p>A companion to <a href="https://skillzy.app" target="_blank" class="skillzy-link">Skillzy</a></p>
       </div>
     </footer>
   </div>
@@ -177,8 +149,8 @@ function handleCta() {
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background: var(--app-surface, #0a0a0b);
-  color: var(--app-text, #fafafa);
+  background: var(--app-bg, #faf8f5);
+  color: var(--app-text, #1a1815);
 }
 
 /* Navbar */
@@ -195,14 +167,14 @@ function handleCta() {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--app-text, #fafafa);
+  color: var(--app-text, #1a1815);
   text-decoration: none;
   font-weight: 600;
   font-size: 1.1rem;
 }
 
 .home-navbar-logo svg {
-  color: var(--theme-accent, #ec4899);
+  color: var(--theme-accent, #78716c);
 }
 
 .home-navbar-right {
@@ -216,14 +188,14 @@ function handleCta() {
 }
 
 .login-btn {
-  background: var(--theme-accent, #ec4899);
+  background: var(--app-text, #1a1815);
   border: none;
   color: white;
   margin-left: 8px;
 }
 
 .login-btn:hover {
-  background: var(--theme-accent-hover, #db2777);
+  background: var(--theme-accent-hover, #57534e);
 }
 
 /* Hero */
@@ -242,12 +214,12 @@ function handleCta() {
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  background: rgba(236, 72, 153, 0.1);
-  border: 1px solid rgba(236, 72, 153, 0.2);
+  background: var(--app-surface-2, #f5f2ed);
+  border: 1px solid var(--app-border, #e2ddd5);
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--theme-accent, #ec4899);
+  color: var(--theme-accent, #78716c);
   margin-bottom: 24px;
 }
 
@@ -261,7 +233,7 @@ function handleCta() {
 
 .hero-gradient {
   display: block;
-  background: linear-gradient(135deg, var(--theme-accent, #ec4899), #8b5cf6);
+  background: linear-gradient(135deg, #57534e, #a8a29e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -269,7 +241,7 @@ function handleCta() {
 
 .hero-subtitle {
   font-size: 1.2rem;
-  color: var(--app-text-dim, #a1a1aa);
+  color: var(--app-text-muted, #78716c);
   margin: 0 0 40px;
   line-height: 1.6;
   max-width: 600px;
@@ -284,7 +256,7 @@ function handleCta() {
 }
 
 .primary-btn {
-  background: var(--theme-accent, #ec4899);
+  background: var(--app-text, #1a1815);
   border: none;
   color: white;
   display: flex;
@@ -293,17 +265,7 @@ function handleCta() {
 }
 
 .primary-btn:hover {
-  background: var(--theme-accent-hover, #db2777);
-}
-
-.secondary-btn {
-  background: transparent;
-  border: 1px solid var(--app-border-hover, #3f3f46);
-  color: var(--app-text, #fafafa);
-}
-
-.secondary-btn:hover {
-  background: var(--app-surface-3, #1a1a1c);
+  background: var(--theme-accent-hover, #57534e);
 }
 
 /* Features */
@@ -311,7 +273,7 @@ function handleCta() {
   max-width: 1100px;
   margin: 0 auto;
   padding: 80px 32px;
-  border-top: 1px solid var(--app-border, #27272a);
+  border-top: 1px solid var(--app-border, #e2ddd5);
 }
 
 .features-header {
@@ -326,39 +288,39 @@ function handleCta() {
 }
 
 .features-header p {
-  color: var(--app-text-muted, #71717a);
+  color: var(--app-text-muted, #78716c);
   font-size: 1.1rem;
   margin: 0;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
 }
 
 .feature-card {
   padding: 32px;
-  background: var(--app-surface-2, #111113);
-  border: 1px solid var(--app-border, #27272a);
+  background: var(--app-surface, #ffffff);
+  border: 1px solid var(--app-border, #e2ddd5);
   border-radius: 12px;
   transition: border-color 0.2s;
 }
 
 .feature-card:hover {
-  border-color: var(--app-border-hover, #3f3f46);
+  border-color: var(--app-border-hover, #d4cec5);
 }
 
 .feature-icon {
   width: 48px;
   height: 48px;
   margin-bottom: 16px;
-  background: rgba(236, 72, 153, 0.1);
+  background: var(--app-surface-2, #f5f2ed);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--theme-accent, #ec4899);
+  color: var(--theme-accent, #78716c);
 }
 
 .feature-card h3 {
@@ -368,7 +330,7 @@ function handleCta() {
 }
 
 .feature-card p {
-  color: var(--app-text-muted, #71717a);
+  color: var(--app-text-muted, #78716c);
   margin: 0;
   line-height: 1.6;
   font-size: 0.9rem;
@@ -376,7 +338,7 @@ function handleCta() {
 
 /* Included */
 .included {
-  border-top: 1px solid var(--app-border, #27272a);
+  border-top: 1px solid var(--app-border, #e2ddd5);
   padding: 80px 32px;
 }
 
@@ -404,11 +366,11 @@ function handleCta() {
   gap: 10px;
   padding: 8px 0;
   font-size: 0.95rem;
-  color: var(--app-text-dim, #a1a1aa);
+  color: var(--app-text-muted, #78716c);
 }
 
 .included-item svg {
-  color: #22c55e;
+  color: #16a34a;
   flex-shrink: 0;
 }
 
@@ -416,7 +378,7 @@ function handleCta() {
 .cta {
   text-align: center;
   padding: 80px 32px;
-  background: var(--app-surface-2, #111113);
+  background: var(--app-surface-2, #f5f2ed);
 }
 
 .cta h2 {
@@ -426,14 +388,14 @@ function handleCta() {
 }
 
 .cta p {
-  color: var(--app-text-muted, #71717a);
+  color: var(--app-text-muted, #78716c);
   margin: 0 0 32px;
   font-size: 1.1rem;
 }
 
 /* Footer */
 .footer {
-  border-top: 1px solid var(--app-border, #27272a);
+  border-top: 1px solid var(--app-border, #e2ddd5);
   padding: 32px;
 }
 
@@ -454,13 +416,23 @@ function handleCta() {
 }
 
 .footer-logo svg {
-  color: var(--theme-accent, #ec4899);
+  color: var(--theme-accent, #78716c);
 }
 
 .footer p {
-  color: #52525b;
+  color: var(--app-text-dim, #a8a29e);
   margin: 0;
   font-size: 0.85rem;
+}
+
+.skillzy-link {
+  color: var(--theme-accent, #78716c);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.skillzy-link:hover {
+  color: var(--app-text, #1a1815);
 }
 
 @media (max-width: 768px) {

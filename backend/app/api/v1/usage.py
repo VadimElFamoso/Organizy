@@ -23,10 +23,10 @@ class UsageResponse(BaseModel):
     """Usage response."""
 
     is_pro: bool
-    presentations: UsageItem
+    actions: UsageItem
     exports: UsageItem
-    assets: UsageItem
-    ai_messages: UsageItem
+    uploads: UsageItem
+    api_calls: UsageItem
 
 
 @router.get("/me", response_model=UsageResponse)

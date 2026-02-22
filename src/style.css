@@ -119,28 +119,28 @@
   }
 }
 
-/* App theme variables (dark mode) */
+/* App theme variables (light warm) */
 :root {
-  --app-surface: #09090b;
-  --app-surface-2: #111113;
-  --app-surface-3: #1a1a1c;
-  --app-border: #27272a;
-  --app-border-hover: #3f3f46;
-  --app-text: #fafafa;
-  --app-text-muted: #71717a;
-  --app-text-dim: #a1a1aa;
-  --theme-accent: #ec4899;
-  --theme-accent-hover: #db2777;
+  --app-surface: #ffffff;
+  --app-surface-2: #f5f2ed;
+  --app-surface-3: #ebe7e0;
+  --app-border: #e2ddd5;
+  --app-border-hover: #d4cec5;
+  --app-text: #1a1815;
+  --app-text-muted: #78716c;
+  --app-text-dim: #a8a29e;
+  --theme-accent: #78716c;
+  --theme-accent-hover: #57534e;
 }
 
-/* Force dark theme for presentation toolbar popovers */
+/* Popover overrides */
 [data-slot="popover-content"].theme-popover,
 [data-slot="popover-content"].display-popover {
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  background: #18181b !important;
-  color: #fafafa !important;
-  border-color: #27272a !important;
+  --popover: #ffffff;
+  --popover-foreground: #1a1815;
+  background: #ffffff !important;
+  color: #1a1815 !important;
+  border-color: #e2ddd5 !important;
 }
 
 [data-slot="popover-content"].theme-popover *,
@@ -159,18 +159,18 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #d4cec5;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #a8a29e;
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent;
+  scrollbar-color: #d4cec5 transparent;
 }
 
 /* Shared navbar styles */
@@ -215,27 +215,27 @@
 }
 
 .app-navbar-status-badge.trialing {
-  background: rgba(59, 130, 246, 0.15);
-  color: rgb(147, 197, 253);
-  border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+  border-color: rgba(59, 130, 246, 0.25);
 }
 
 .app-navbar-status-badge.canceled {
-  background: rgba(249, 115, 22, 0.15);
-  color: rgb(253, 186, 116);
-  border-color: rgba(249, 115, 22, 0.3);
+  background: rgba(249, 115, 22, 0.1);
+  color: #c2410c;
+  border-color: rgba(249, 115, 22, 0.25);
 }
 
 .app-navbar-status-badge.needs-sub {
-  background: rgba(239, 68, 68, 0.15);
-  color: rgb(252, 165, 165);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .app-navbar-status-badge.active {
-  background: rgba(236, 72, 153, 0.15);
-  color: rgb(244, 114, 182);
-  border-color: rgba(236, 72, 153, 0.3);
+  background: rgba(120, 113, 108, 0.1);
+  color: #57534e;
+  border-color: rgba(120, 113, 108, 0.25);
 }
 
 .app-navbar-user-avatar {

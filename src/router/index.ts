@@ -19,6 +19,21 @@ const router = createRouter({
       component: () => import('@/pages/DashboardPage.vue'),
     },
     {
+      path: '/daily-tasks',
+      name: 'daily-tasks',
+      component: () => import('@/pages/DailyTasksPage.vue'),
+    },
+    {
+      path: '/workouts',
+      name: 'workouts',
+      component: () => import('@/pages/WorkoutsPage.vue'),
+    },
+    {
+      path: '/todos',
+      name: 'todos',
+      component: () => import('@/pages/TodosPage.vue'),
+    },
+    {
       path: '/pricing',
       name: 'pricing',
       component: () => import('@/pages/PricingPage.vue'),

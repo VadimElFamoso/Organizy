@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, toRef } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { Badge } from '@/components/ui/badge'
+import { ref } from 'vue'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,13 +13,13 @@ import {
   User,
   Menu,
   X,
-  Crown,
-  Clock,
   Settings,
   ChevronLeft,
-  Rocket,
+  CalendarCheck,
+  LayoutDashboard,
+  Dumbbell,
+  ListTodo,
 } from 'lucide-vue-next'
-import { useSubscription } from '@/composables/useSubscription'
 import type { User as UserType } from '@/services/api'
 
 type NavbarMode = 'dashboard' | 'settings'
@@ -31,7 +30,7 @@ interface Props {
   showBackButton?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   showBackButton: false,
 })
 
@@ -41,8 +40,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
-const userRef = toRef(props, 'user')
-const { isTrialing, isActive, isCanceled, needsSubscription, trialDaysRemaining } = useSubscription(userRef)
+const route = useRoute()
 
 const mobileMenuOpen = ref(false)
 
@@ -62,6 +60,17 @@ function handleMobileAction(action: () => void) {
   action()
   mobileMenuOpen.value = false
 }
+
+const navLinks = [
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/daily-tasks', label: 'Daily Tasks', icon: CalendarCheck },
+  { to: '/workouts', label: 'Workouts', icon: Dumbbell },
+  { to: '/todos', label: 'Todos', icon: ListTodo },
+]
+
+function isActive(path: string) {
+  return route.path === path
+}
 </script>
 
 <template>
@@ -79,37 +88,28 @@ function handleMobileAction(action: () => void) {
 
       <!-- Logo -->
       <RouterLink to="/dashboard" class="app-navbar-logo">
-        <Rocket :size="18" />
-        <span class="logo-text">Launchpad</span>
+        <CalendarCheck :size="18" />
+        <span class="logo-text">Organizy</span>
       </RouterLink>
+
+      <!-- Nav links (desktop) -->
+      <nav class="nav-links desktop-only">
+        <RouterLink
+          v-for="link in navLinks"
+          :key="link.to"
+          :to="link.to"
+          class="nav-link"
+          :class="{ active: isActive(link.to) }"
+        >
+          <component :is="link.icon" :size="16" />
+          <span>{{ link.label }}</span>
+        </RouterLink>
+      </nav>
     </div>
 
     <!-- Right section -->
     <div class="navbar-right">
       <template v-if="user">
-        <!-- Subscription badge (desktop) -->
-        <RouterLink v-if="isTrialing" to="/settings" class="desktop-only">
-          <Badge variant="outline" class="app-navbar-status-badge trialing">
-            <Clock :size="12" />
-            {{ trialDaysRemaining }}d trial
-          </Badge>
-        </RouterLink>
-        <RouterLink v-else-if="isCanceled" to="/settings" class="desktop-only">
-          <Badge variant="outline" class="app-navbar-status-badge canceled">
-            <Clock :size="12" />
-            {{ trialDaysRemaining }}d left
-          </Badge>
-        </RouterLink>
-        <RouterLink v-else-if="needsSubscription" to="/pricing" class="desktop-only">
-          <Badge variant="destructive" class="app-navbar-status-badge needs-sub">
-            Start Trial
-          </Badge>
-        </RouterLink>
-        <Badge v-else-if="isActive" variant="outline" class="desktop-only app-navbar-status-badge active">
-          <Crown :size="12" />
-          Pro
-        </Badge>
-
         <!-- User dropdown (desktop) -->
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
@@ -155,13 +155,16 @@ function handleMobileAction(action: () => void) {
         <!-- Navigation -->
         <div class="mobile-menu-section">
           <span class="mobile-section-label">Navigation</span>
-          <RouterLink to="/dashboard" class="mobile-menu-item" @click="mobileMenuOpen = false">
-            <Rocket :size="18" />
-            <span>Dashboard</span>
-          </RouterLink>
-          <RouterLink to="/pricing" class="mobile-menu-item" @click="mobileMenuOpen = false">
-            <Crown :size="18" />
-            <span>Pricing</span>
+          <RouterLink
+            v-for="link in navLinks"
+            :key="link.to"
+            :to="link.to"
+            class="mobile-menu-item"
+            :class="{ 'mobile-active': isActive(link.to) }"
+            @click="mobileMenuOpen = false"
+          >
+            <component :is="link.icon" :size="18" />
+            <span>{{ link.label }}</span>
           </RouterLink>
         </div>
 
@@ -174,21 +177,6 @@ function handleMobileAction(action: () => void) {
               <div class="mobile-user-details">
                 <span class="mobile-user-name">{{ user.name }}</span>
                 <span class="mobile-user-email">{{ user.email }}</span>
-                <Badge v-if="isTrialing" variant="outline" class="mt-1 app-navbar-status-badge trialing mobile">
-                  <Clock :size="10" />
-                  {{ trialDaysRemaining }}d trial
-                </Badge>
-                <Badge v-else-if="isCanceled" variant="outline" class="mt-1 app-navbar-status-badge canceled mobile">
-                  <Clock :size="10" />
-                  {{ trialDaysRemaining }}d left
-                </Badge>
-                <Badge v-else-if="needsSubscription" variant="destructive" class="mt-1 app-navbar-status-badge needs-sub mobile">
-                  Start Trial
-                </Badge>
-                <Badge v-else-if="isActive" variant="outline" class="mt-1 app-navbar-status-badge active mobile">
-                  <Crown :size="10" />
-                  Pro
-                </Badge>
               </div>
             </div>
             <RouterLink to="/settings" class="mobile-menu-item" @click="mobileMenuOpen = false">
@@ -236,6 +224,39 @@ function handleMobileAction(action: () => void) {
   font-weight: 600;
 }
 
+/* Nav links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid var(--app-border);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--app-text-muted);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.nav-link:hover {
+  background: var(--app-surface-3);
+  color: var(--app-text);
+}
+
+.nav-link.active {
+  background: var(--app-surface-3);
+  color: var(--app-text);
+}
+
 .navbar-right {
   display: flex;
   align-items: center;
@@ -252,7 +273,7 @@ function handleMobileAction(action: () => void) {
 }
 
 .user-menu-trigger:hover {
-  box-shadow: 0 0 0 2px var(--theme-accent);
+  box-shadow: 0 0 0 2px var(--app-border-hover);
 }
 
 .user-avatar-placeholder {
@@ -320,13 +341,13 @@ function handleMobileAction(action: () => void) {
   top: 52px;
   left: 0;
   right: 0;
-  background: var(--app-surface-2);
+  background: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
   z-index: 1000;
   max-height: calc(100vh - 52px);
   overflow-x: hidden;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 
@@ -363,7 +384,12 @@ function handleMobileAction(action: () => void) {
 }
 
 .mobile-menu-item:hover {
-  background: var(--app-surface-3);
+  background: var(--app-surface-2);
+}
+
+.mobile-menu-item.mobile-active {
+  background: var(--app-surface-2);
+  font-weight: 600;
 }
 
 .mobile-menu-item svg {
@@ -381,7 +407,7 @@ function handleMobileAction(action: () => void) {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--app-surface-3);
+  background: var(--app-surface-2);
   margin: 0 12px 8px;
   border-radius: 8px;
 }
@@ -397,7 +423,7 @@ function handleMobileAction(action: () => void) {
   width: 40px;
   height: 40px;
   padding: 10px;
-  background: var(--app-surface);
+  background: var(--app-surface-3);
   border-radius: 50%;
   color: var(--app-text-muted);
 }
@@ -462,6 +488,10 @@ function handleMobileAction(action: () => void) {
   }
 
   .logo-text {
+    display: none;
+  }
+
+  .nav-links {
     display: none;
   }
 }

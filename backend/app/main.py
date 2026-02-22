@@ -15,7 +15,6 @@ from app.config import settings
 from app.core.logging import get_logger, setup_logging
 from app.core.middleware import RequestIDMiddleware
 from app.database import engine
-from app.models.base import Base
 
 # Initialize structured logging
 setup_logging()
@@ -34,12 +33,6 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting application", extra={"environment": settings.environment})
 
-    # Create tables if they don't exist (for development)
-    # In production, use Alembic migrations
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables initialized")
-
     logger.info("Upload directories ready", extra={"path": str(UPLOAD_DIR)})
 
     yield
@@ -50,8 +43,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Launchpad API",
-    description="Backend API for Launchpad SaaS Starter",
+    title="Organizy API",
+    description="Backend API for Organizy",
     version="1.0.0",
     lifespan=lifespan,
 )

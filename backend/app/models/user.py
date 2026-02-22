@@ -12,7 +12,11 @@ from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.analytics import UserAnalytics
+    from app.models.daily_task import DailyTask
+    from app.models.daily_task_completion import DailyTaskCompletion
     from app.models.monthly_usage import MonthlyUsage
+    from app.models.todo_item import TodoItem
+    from app.models.workout import Workout
 
 
 class UserPreferencesDict(TypedDict, total=False):
@@ -69,5 +73,21 @@ class User(Base, TimestampMixin):
     monthly_usage: Mapped[MonthlyUsage | None] = relationship(
         back_populates="user",
         uselist=False,
+        cascade="all, delete-orphan",
+    )
+    daily_tasks: Mapped[list[DailyTask]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    daily_task_completions: Mapped[list[DailyTaskCompletion]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    workouts: Mapped[list[Workout]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    todo_items: Mapped[list[TodoItem]] = relationship(
+        back_populates="user",
         cascade="all, delete-orphan",
     )

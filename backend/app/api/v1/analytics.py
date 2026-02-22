@@ -25,21 +25,3 @@ async def get_user_analytics(
         return UserAnalyticsResponse()
 
     return UserAnalyticsResponse.model_validate(analytics)
-
-
-@router.post("/export")
-async def record_export(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Record an export event."""
-    result = await db.execute(
-        select(UserAnalytics).where(UserAnalytics.user_id == current_user.id)
-    )
-    analytics = result.scalar_one_or_none()
-
-    if analytics:
-        analytics.total_exports += 1
-        await db.flush()
-
-    return {"message": "Export recorded"}
