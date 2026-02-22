@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: launchpad-db
+    environment:
+      - POSTGRES_USER=launchpad
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-launchpad}
+      - POSTGRES_DB=launchpad
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U launchpad"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - launchpad
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: launchpad-backend
+    environment:
+      - ENVIRONMENT=prod
+      - DATABASE_URL=postgresql+asyncpg://launchpad:${POSTGRES_PASSWORD:-launchpad}@postgres:5432/launchpad
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-https://launchpad.example.com/api/v1/auth/google/callback}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_PRICE_ID_STARTER_MONTHLY=${STRIPE_PRICE_ID_STARTER_MONTHLY}
+      - STRIPE_PRICE_ID_STARTER_YEARLY=${STRIPE_PRICE_ID_STARTER_YEARLY}
+      - STRIPE_PRICE_ID_PRO_MONTHLY=${STRIPE_PRICE_ID_PRO_MONTHLY}
+      - STRIPE_PRICE_ID_PRO_YEARLY=${STRIPE_PRICE_ID_PRO_YEARLY}
+      - STRIPE_PRICE_ID_UNLIMITED_MONTHLY=${STRIPE_PRICE_ID_UNLIMITED_MONTHLY}
+      - STRIPE_PRICE_ID_UNLIMITED_YEARLY=${STRIPE_PRICE_ID_UNLIMITED_YEARLY}
+      - FRONTEND_URL=${FRONTEND_URL:-https://launchpad.example.com}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - launchpad
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.launchpad-api.rule=Host(`${DOMAIN:-launchpad.example.com}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.launchpad-api.entrypoints=https"
+      - "traefik.http.routers.launchpad-api.tls=true"
+      - "traefik.http.routers.launchpad-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.launchpad-api.loadbalancer.server.port=8000"
+      - "traefik.docker.network=proxy"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.prod
+      args:
+        - VITE_API_URL=${VITE_API_URL:-https://launchpad.example.com/api/v1}
+    container_name: launchpad-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - launchpad
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.launchpad-frontend.rule=Host(`${DOMAIN:-launchpad.example.com}`)"
+      - "traefik.http.routers.launchpad-frontend.entrypoints=https"
+      - "traefik.http.routers.launchpad-frontend.tls=true"
+      - "traefik.http.routers.launchpad-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.launchpad-frontend.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+
+volumes:
+  postgres_data:
+
+networks:
+  launchpad:
+    driver: bridge
+  proxy:
+    external: true
