@@ -43,7 +43,7 @@ const plans: Plan[] = [
   {
     name: 'Standard',
     price_monthly: 9.99,
-    price_yearly: 89.91,
+    price_yearly: 83.92,
     badge: 'Populaire',
     highlighted: true,
     features: [
@@ -58,7 +58,7 @@ const plans: Plan[] = [
   {
     name: 'Pro',
     price_monthly: 24.99,
-    price_yearly: 224.91,
+    price_yearly: 209.92,
     features: [
       'Tout le plan Standard',
       'Accès aux futurs outils',
@@ -125,7 +125,7 @@ function handleCta() {
           @click="billingCycle = 'yearly'"
         >
           Annuel
-          <span class="save-badge">−25 %</span>
+          <span class="save-badge">−30 %</span>
         </button>
       </div>
     </section>

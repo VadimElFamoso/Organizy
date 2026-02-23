@@ -101,7 +101,9 @@ const graphRange = computed(() => {
     monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7) + (graphOffset.value * 7))
     const sunday = new Date(monday)
     sunday.setDate(monday.getDate() + 6)
-    start = monday
+    // Start 1 day before for line continuation effect
+    start = new Date(monday)
+    start.setDate(monday.getDate() - 1)
     end = sunday
   } else if (graphPeriod.value === 'month') {
     const base = new Date(now.getFullYear(), now.getMonth() + graphOffset.value, 1)
@@ -113,11 +115,12 @@ const graphRange = computed(() => {
     end = new Date(year, 11, 31)
   }
 
-  // Cap end at today
+  // Cap end at today (except week view — show full week)
   const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const fullEnd = new Date(end)
   if (end > todayDate) end = todayDate
 
-  return { start, end }
+  return { start, end, fullEnd }
 })
 
 const graphLabel = computed(() => {
@@ -169,12 +172,22 @@ async function loadWeekCompletions() {
 }
 
 async function loadRangeStats() {
-  const { start, end } = graphRange.value
+  const { start, end, fullEnd } = graphRange.value
   const stats = await getRangeStats(
     toLocalDate(start),
     toLocalDate(end),
   )
-  rangeStats.value = stats.days
+  const days = [...stats.days]
+  // For week view, fill in future days so all 7 labels show
+  if (graphPeriod.value === 'week' && fullEnd > end) {
+    const next = new Date(end)
+    next.setDate(next.getDate() + 1)
+    while (next <= fullEnd) {
+      days.push({ date: toLocalDate(next), completed: null as any, total: 0, ratio: 0 })
+      next.setDate(next.getDate() + 1)
+    }
+  }
+  rangeStats.value = days
 }
 
 function openCreate() {
@@ -319,7 +332,7 @@ async function handleLogout() {
                   </Button>
                 </div>
               </div>
-              <CompletionLineChart :days="rangeStats" />
+              <CompletionLineChart :days="rangeStats" :prefix-days="graphPeriod === 'week' ? 1 : 0" />
             </TabsContent>
           </Tabs>
         </section>
