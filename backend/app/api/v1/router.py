@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     analytics,
     auth,
+    budget,
     daily_tasks,
     dashboard,
     payments,
@@ -23,3 +24,4 @@ api_router.include_router(daily_tasks.router, prefix="/daily-tasks", tags=["dail
 api_router.include_router(workouts.router, prefix="/workouts", tags=["workouts"])
 api_router.include_router(todos.router, prefix="/todos", tags=["todos"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(budget.router, prefix="/budget", tags=["budget"])

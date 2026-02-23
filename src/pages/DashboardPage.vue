@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useSubscription } from '@/composables/useSubscription'
 import { useDashboard } from '@/composables/useDashboard'
 import { useDailyTasks } from '@/composables/useDailyTasks'
 import AppNavbar from '@/components/layout/AppNavbar.vue'
@@ -9,10 +10,12 @@ import TodayTasks from '@/components/dashboard/TodayTasks.vue'
 import DotYearCalendar from '@/components/dashboard/DotYearCalendar.vue'
 import WorkoutSummaryCard from '@/components/dashboard/WorkoutSummary.vue'
 import TopTodos from '@/components/dashboard/TopTodos.vue'
+import BudgetSummary from '@/components/dashboard/BudgetSummary.vue'
 import { Loader2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const { user, isAuthenticated, logout } = useAuth()
+const { isPro } = useSubscription(user)
 const { dashboard, isLoading, fetchDashboard } = useDashboard()
 const { toggleCompletion } = useDailyTasks()
 
@@ -63,19 +66,25 @@ async function handleLogout() {
         </div>
 
         <div class="dashboard-grid">
-          <div class="year-column-card">
-            <h3 class="year-title">Progression annuelle</h3>
-            <DotYearCalendar :year="new Date().getFullYear()" />
+          <div class="left-column">
+            <div class="year-column-card">
+              <h3 class="year-title">Progression annuelle</h3>
+              <DotYearCalendar :year="new Date().getFullYear()" />
+            </div>
           </div>
-          <div class="grid-main">
+          <div class="right-column">
             <TodayTasks
               :tasks="dashboard.today_tasks"
+              class="cell-tasks"
               @toggle="handleToggleTask"
             />
-            <div class="grid-row">
-              <WorkoutSummaryCard :summary="dashboard.workout_summary" />
-              <TopTodos :todos="dashboard.top_todos" />
-            </div>
+            <WorkoutSummaryCard :summary="dashboard.workout_summary" class="cell-sport" />
+            <TopTodos :todos="dashboard.top_todos" class="cell-kanban" />
+            <BudgetSummary
+              v-if="isPro && dashboard.budget_summary"
+              :summary="dashboard.budget_summary"
+              class="cell-budget"
+            />
           </div>
         </div>
       </template>
@@ -137,6 +146,14 @@ async function handleLogout() {
   gap: 24px;
 }
 
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex-shrink: 0;
+  width: 358px;
+}
+
 .year-column-card {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
@@ -145,7 +162,7 @@ async function handleLogout() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 .year-title {
@@ -158,23 +175,42 @@ async function handleLogout() {
   white-space: nowrap;
 }
 
-.grid-main {
+.right-column {
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 24px;
   min-width: 0;
 }
 
-.grid-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+.cell-tasks {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.cell-kanban {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.cell-sport {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.cell-budget {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 @media (max-width: 768px) {
   .dashboard-grid {
     flex-direction: column;
+  }
+
+  .left-column {
+    width: 100%;
   }
 
   .year-column-card {
@@ -183,8 +219,17 @@ async function handleLogout() {
     gap: 12px;
   }
 
-  .grid-row {
+  .right-column {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .cell-tasks,
+  .cell-kanban,
+  .cell-sport,
+  .cell-budget {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .content {

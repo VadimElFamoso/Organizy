@@ -73,8 +73,18 @@ const weekLabel = computed(() => {
   return `${fmt(start)} — ${fmt(end)} ${yearStr}`
 })
 
+const canGoPrevWeek = computed(() => {
+  if (!user.value?.created_at) return true
+  const created = new Date(user.value.created_at)
+  if (weekDates.value.length === 0) return true
+  const firstDay = new Date(weekDates.value[0]!)
+  const prevStart = new Date(firstDay)
+  prevStart.setDate(firstDay.getDate() - 7)
+  return prevStart >= new Date(created.getFullYear(), created.getMonth(), 1)
+})
+
 function prevWeek() {
-  weekOffset.value--
+  if (canGoPrevWeek.value) weekOffset.value--
 }
 
 function nextWeek() {
@@ -141,8 +151,26 @@ function setGraphPeriod(period: GraphPeriod) {
   graphOffset.value = 0
 }
 
+const canGoPrevGraph = computed(() => {
+  if (!user.value?.created_at) return true
+  const created = new Date(user.value.created_at)
+  const { start } = graphRange.value
+
+  if (graphPeriod.value === 'week') {
+    const prevStart = new Date(start)
+    prevStart.setDate(prevStart.getDate() - 7)
+    return prevStart >= new Date(created.getFullYear(), created.getMonth(), 1)
+  }
+  if (graphPeriod.value === 'month') {
+    const prevStart = new Date(start.getFullYear(), start.getMonth() - 1, 1)
+    return prevStart >= new Date(created.getFullYear(), created.getMonth(), 1)
+  }
+  // year
+  return start.getFullYear() - 1 >= created.getFullYear()
+})
+
 function prevGraph() {
-  graphOffset.value--
+  if (canGoPrevGraph.value) graphOffset.value--
 }
 
 function nextGraph() {
@@ -287,7 +315,7 @@ async function handleLogout() {
             </TabsList>
             <TabsContent value="table">
               <div class="period-nav">
-                <Button variant="ghost" size="sm" @click="prevWeek">
+                <Button variant="ghost" size="sm" @click="prevWeek" :disabled="!canGoPrevWeek">
                   <ChevronLeft :size="16" />
                 </Button>
                 <span class="period-label">{{ weekLabel }}</span>
@@ -323,7 +351,7 @@ async function handleLogout() {
                   >Année</button>
                 </div>
                 <div class="period-nav">
-                  <Button variant="ghost" size="sm" @click="prevGraph">
+                  <Button variant="ghost" size="sm" @click="prevGraph" :disabled="!canGoPrevGraph">
                     <ChevronLeft :size="16" />
                   </Button>
                   <span class="period-label">{{ graphLabel }}</span>

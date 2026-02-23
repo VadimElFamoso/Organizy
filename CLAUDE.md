@@ -21,7 +21,15 @@ Full-stack personal organization app with Vue 3 frontend + FastAPI backend + Pos
 - **Kanban Todos**: Priority-based boards (Urgent/High/Medium/Low) with drag & drop
 - **Dashboard**: Aggregated view of today's tasks, year progression dots, workout summary, top todos
 - **Auth**: Google OAuth with httpOnly cookie sessions
-- **Payments**: Stripe (in codebase but no features are gated — all users have full access)
+- **Payments**: Stripe integration (checkout, portal, webhooks, subscription lifecycle)
+
+## Version 1.0.0 (Current)
+
+Two tiers:
+- **Gratuit (Free)**: Restricted access — 4 daily tasks, 8 kanban todos, 30-day workout history, basic stats
+- **Standard (9,99€/mois or 83,92€/an — 30% off)**: Full access — unlimited tasks, unlimited kanban, unlimited workout history, full stats, regularity graphs, year calendar
+
+A **Pro** plan (24,99€/mois or 209,92€/an) exists in the pricing page for future advanced features.
 
 ## Design System & Style
 
@@ -104,6 +112,10 @@ uv run launchpad db reset     # Reset database
 - `DailyTaskCompletion` — One per task per day, unique constraint `(task_id, completed_date)`
 - `Workout` — Workout log entries with type, date, duration
 - `TodoItem` — Kanban items with priority (urgent/high/medium/low) and sort_order
+
+## Known Issues
+
+- **Scroll to top on route change**: Navigating from a hash route (e.g. `/#features`) to another page (e.g. `/pricing`) does not scroll to the top. Vue Router's `scrollBehavior` and `afterEach` with `window.scrollTo(0, 0)` don't work reliably with lazy-loaded routes. Needs manual fix — possibly a `Suspense` wrapper, eager-loading key pages, or handling scroll in the target page's `onMounted`.
 
 ## API Routes
 

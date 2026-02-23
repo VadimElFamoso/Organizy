@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { WorkoutCalendarDay } from '@/services/api'
 
 const props = defineProps<{
   days: WorkoutCalendarDay[]
+  minDate?: string
 }>()
 
 const emit = defineEmits<{
@@ -21,7 +22,22 @@ const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
 
 const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
+const canGoPrev = computed(() => {
+  if (!props.minDate) return true
+  const min = new Date(props.minDate)
+  let prevYear = currentYear.value
+  let prevMonth = currentMonth.value - 1
+  if (prevMonth === 0) { prevMonth = 12; prevYear-- }
+  return prevYear > min.getFullYear() || (prevYear === min.getFullYear() && prevMonth >= min.getMonth() + 1)
+})
+
+const canGoNext = computed(() => {
+  const now = new Date()
+  return currentYear.value < now.getFullYear() || (currentYear.value === now.getFullYear() && currentMonth.value < now.getMonth() + 1)
+})
+
 function prevMonth() {
+  if (!canGoPrev.value) return
   if (currentMonth.value === 1) {
     currentMonth.value = 12
     currentYear.value--
@@ -32,6 +48,7 @@ function prevMonth() {
 }
 
 function nextMonth() {
+  if (!canGoNext.value) return
   if (currentMonth.value === 12) {
     currentMonth.value = 1
     currentYear.value++
@@ -74,11 +91,11 @@ onMounted(() => {
 <template>
   <div class="workout-calendar">
     <div class="cal-header">
-      <Button variant="ghost" size="sm" @click="prevMonth">
+      <Button variant="ghost" size="sm" @click="prevMonth" :disabled="!canGoPrev">
         <ChevronLeft :size="16" />
       </Button>
       <span class="cal-title">{{ monthNames[currentMonth - 1] }} {{ currentYear }}</span>
-      <Button variant="ghost" size="sm" @click="nextMonth">
+      <Button variant="ghost" size="sm" @click="nextMonth" :disabled="!canGoNext">
         <ChevronRight :size="16" />
       </Button>
     </div>

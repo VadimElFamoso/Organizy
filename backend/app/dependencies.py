@@ -123,6 +123,28 @@ async def require_active_subscription(
     return current_user
 
 
+async def require_pro_plan(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Dependency that requires user to have an active Pro or Unlimited plan."""
+    from app.models.user import SubscriptionPlan
+
+    if not has_active_subscription(current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Pro plan required. Upgrade to access this feature.",
+        )
+    if current_user.subscription_plan not in (
+        SubscriptionPlan.PRO.value,
+        SubscriptionPlan.UNLIMITED.value,
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Pro plan required. Upgrade to access this feature.",
+        )
+    return current_user
+
+
 def require_usage_limit(resource: str):
     """
     Dependency factory for checking usage limits before processing.

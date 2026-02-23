@@ -61,8 +61,9 @@ const plans: Plan[] = [
     price_yearly: 209.92,
     features: [
       'Tout le plan Standard',
-      'Accès aux futurs outils',
-      'Fonctionnalités avancées à venir',
+      'Suivi de budget complet',
+      'Graphiques financiers',
+      'Gestion des abonnements',
       'Support prioritaire',
     ],
   },

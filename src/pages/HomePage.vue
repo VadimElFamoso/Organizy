@@ -8,7 +8,6 @@ import {
   ListTodo,
   LayoutDashboard,
   ArrowRight,
-  Check,
   CalendarCheck,
 } from 'lucide-vue-next'
 
@@ -64,11 +63,7 @@ function handleCta() {
     <!-- Hero -->
     <section class="hero">
       <div class="hero-inner">
-        <div class="hero-badge">
-          <span class="badge-dot" />
-          Simple par nature
-        </div>
-        <h1>Organisez vos journées,<br />sans effort.</h1>
+        <h1>Organisez vos journées, sans effort.</h1>
         <p class="hero-sub">
           Habitudes, sport et tâches — dans un seul espace clair et rapide.
           Pas de superflu, pas de courbe d'apprentissage. Ouvrez, cochez, avancez.
@@ -84,67 +79,6 @@ function handleCta() {
         </div>
         <p class="hero-note">Gratuit pour toujours. Aucune carte bancaire requise.</p>
       </div>
-
-      <!-- Product preview -->
-      <div class="hero-preview">
-        <div class="preview-lift">
-        <div class="preview-card">
-          <div class="preview-bar">
-            <div class="bar-dots">
-              <span /><span /><span />
-            </div>
-            <span class="bar-title">Tableau de bord</span>
-          </div>
-          <div class="preview-body">
-            <div class="preview-col-left">
-              <div class="preview-label">Tâches du jour</div>
-              <div class="preview-task">
-                <div class="t-check done" /><span>Routine matinale</span>
-              </div>
-              <div class="preview-task">
-                <div class="t-check done" /><span>Lire 30 min</span>
-              </div>
-              <div class="preview-task">
-                <div class="t-check done" /><span>Sport</span>
-              </div>
-              <div class="preview-task">
-                <div class="t-check" /><span>Bilan du soir</span>
-              </div>
-              <div class="preview-task">
-                <div class="t-check" /><span>Journal</span>
-              </div>
-              <div class="preview-progress">
-                <div class="progress-track">
-                  <div class="progress-fill" style="width: 60%" />
-                </div>
-                <span>3 sur 5 faites</span>
-              </div>
-            </div>
-            <div class="preview-col-right">
-              <div class="preview-mini-card">
-                <div class="preview-label">Régularité</div>
-                <svg class="mini-chart" viewBox="0 0 200 60" fill="none">
-                  <defs>
-                    <linearGradient id="cf" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="var(--app-text)" stop-opacity="0.12" />
-                      <stop offset="100%" stop-color="var(--app-text)" stop-opacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M0,38 C15,42 25,48 40,44 C55,40 60,22 80,18 C100,14 105,38 120,42 C135,46 145,20 160,14 C175,8 185,28 200,32 L200,60 L0,60Z" fill="url(#cf)" />
-                  <path d="M0,38 C15,42 25,48 40,44 C55,40 60,22 80,18 C100,14 105,38 120,42 C135,46 145,20 160,14 C175,8 185,28 200,32" stroke="var(--app-text)" stroke-width="2" stroke-linecap="round" fill="none" />
-                </svg>
-                <span class="mini-stat">4.2 moy/jour</span>
-              </div>
-              <div class="preview-mini-card streak-card">
-                <div class="preview-label">Série</div>
-                <div class="streak-num">12</div>
-                <span class="mini-stat">jours d'affilée</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
     </section>
 
     <!-- Logos / trust bar -->
@@ -159,57 +93,218 @@ function handleCta() {
         <p>Pas de pages, pas de bases de données, pas de courbe d'apprentissage. Quatre outils. Zéro friction.</p>
       </div>
 
-      <div class="feat-grid">
-        <div class="feat-card card-peach">
-          <div class="feat-icon-wrap icon-peach">
-            <CalendarCheck :size="26" stroke-width="2" />
+      <div class="feat-sections">
+        <!-- Habitudes quotidiennes -->
+        <div class="feat-section">
+          <div class="feat-content">
+            <div class="feat-icon-wrap icon-peach">
+              <CalendarCheck :size="26" stroke-width="2" />
+            </div>
+            <h3>Habitudes quotidiennes</h3>
+            <p>Définissez vos tâches récurrentes et suivez votre régularité au fil du temps.</p>
           </div>
-          <h3>Habitudes quotidiennes</h3>
-          <p>Définissez les tâches à faire chaque jour. Cochez-les. Observez votre régularité grandir au fil du temps.</p>
-          <ul class="feat-checks">
-            <li><Check :size="16" /> Tâches récurrentes</li>
-            <li><Check :size="16" /> Tableau de complétion</li>
-            <li><Check :size="16" /> Graphique sur 30 jours</li>
-          </ul>
+          <div class="feat-preview">
+            <div class="fp-card card-peach-bg">
+              <div class="fp-bar">
+                <div class="fp-dots"><span /><span /><span /></div>
+                <span class="fp-title">Suivi de la semaine</span>
+              </div>
+              <div class="fp-body">
+                <table class="fp-grid">
+                  <thead>
+                    <tr>
+                      <th />
+                      <th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="fp-task-name">Routine matinale</td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                    </tr>
+                    <tr>
+                      <td class="fp-task-name">Lire 30 min</td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                    </tr>
+                    <tr>
+                      <td class="fp-task-name">Méditer</td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                    </tr>
+                    <tr>
+                      <td class="fp-task-name">Journaling</td>
+                      <td><span class="fp-sq" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                      <td><span class="fp-sq" /></td>
+                      <td><span class="fp-sq filled" /></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="fp-summary">18/28 cette semaine</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="feat-card card-blue">
-          <div class="feat-icon-wrap icon-blue">
-            <Dumbbell :size="26" stroke-width="2" />
+        <!-- Suivi sportif -->
+        <div class="feat-section reverse">
+          <div class="feat-content">
+            <div class="feat-icon-wrap icon-blue">
+              <Dumbbell :size="26" stroke-width="2" />
+            </div>
+            <h3>Suivi sportif</h3>
+            <p>Enregistrez chaque séance — type, durée, notes. Gardez votre série.</p>
           </div>
-          <h3>Suivi sportif</h3>
-          <p>Enregistrez chaque séance avec type, notes et durée. Visualisez vos jours d'entraînement. Gardez votre série.</p>
-          <ul class="feat-checks">
-            <li><Check :size="16" /> Vue calendrier</li>
-            <li><Check :size="16" /> Compteur de série</li>
-            <li><Check :size="16" /> Auto-complétion</li>
-          </ul>
+          <div class="feat-preview">
+            <div class="fp-card card-blue-bg">
+              <div class="fp-bar">
+                <div class="fp-dots"><span /><span /><span /></div>
+                <span class="fp-title">Historique</span>
+              </div>
+              <div class="fp-body fp-body-workouts">
+                <div class="fp-wo-session">
+                  <div class="fp-wo-header">
+                    <div class="fp-wo-title">Jambes</div>
+                    <div class="fp-wo-info">Lun 17 fév · 45 min</div>
+                  </div>
+                  <div class="fp-wo-exercises">
+                    <div class="fp-wo-ex"><span class="fp-wo-name">Squats</span><span class="fp-wo-detail">4 × 12</span></div>
+                    <div class="fp-wo-ex"><span class="fp-wo-name">Presse</span><span class="fp-wo-detail">3 × 10</span></div>
+                    <div class="fp-wo-ex"><span class="fp-wo-name">Extensions</span><span class="fp-wo-detail">3 × 15</span></div>
+                  </div>
+                </div>
+                <div class="fp-workout-stats">
+                  <span>5 j. consécutifs</span>
+                  <span>12 séances</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="feat-card card-green">
-          <div class="feat-icon-wrap icon-green">
-            <ListTodo :size="26" stroke-width="2" />
+        <!-- Todos kanban -->
+        <div class="feat-section">
+          <div class="feat-content">
+            <div class="feat-icon-wrap icon-green">
+              <ListTodo :size="26" stroke-width="2" />
+            </div>
+            <h3>Todos kanban</h3>
+            <p>Quatre colonnes de priorité avec glisser-déposer. Simple et efficace.</p>
           </div>
-          <h3>Todos kanban</h3>
-          <p>Quatre colonnes de priorité. Glissez-déposez entre elles, cochez, archivez quand c'est fait.</p>
-          <ul class="feat-checks">
-            <li><Check :size="16" /> Glisser-déposer</li>
-            <li><Check :size="16" /> Colonnes par priorité</li>
-            <li><Check :size="16" /> Archive des tâches faites</li>
-          </ul>
+          <div class="feat-preview">
+            <div class="fp-card card-green-bg">
+              <div class="fp-bar">
+                <div class="fp-dots"><span /><span /><span /></div>
+                <span class="fp-title">Kanban</span>
+              </div>
+              <div class="fp-body">
+                <div class="fp-kanban">
+                  <div class="fp-col">
+                    <div class="fp-col-header">
+                      <span class="fp-dot dot-light" />
+                      <span>Basse</span>
+                      <span class="fp-count">2</span>
+                    </div>
+                    <div class="fp-mini-card">Refactorer utils</div>
+                    <div class="fp-mini-card">Nettoyer les logs</div>
+                  </div>
+                  <div class="fp-col">
+                    <div class="fp-col-header">
+                      <span class="fp-dot dot-gray" />
+                      <span>Moyenne</span>
+                      <span class="fp-count">2</span>
+                    </div>
+                    <div class="fp-mini-card">Mettre à jour le README</div>
+                    <div class="fp-mini-card">Ajouter les tests unitaires</div>
+                  </div>
+                  <div class="fp-col">
+                    <div class="fp-col-header">
+                      <span class="fp-dot dot-orange" />
+                      <span>Haute</span>
+                      <span class="fp-count">3</span>
+                    </div>
+                    <div class="fp-mini-card">Finir la page prix</div>
+                    <div class="fp-mini-card">Revoir les tests</div>
+                    <div class="fp-mini-card">Optimiser les requêtes</div>
+                  </div>
+                  <div class="fp-col">
+                    <div class="fp-col-header">
+                      <span class="fp-dot dot-red" />
+                      <span>Urgent</span>
+                      <span class="fp-count">2</span>
+                    </div>
+                    <div class="fp-mini-card">Corriger le bug login</div>
+                    <div class="fp-mini-card">Déployer le hotfix</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="feat-card card-amber">
-          <div class="feat-icon-wrap icon-amber">
-            <LayoutDashboard :size="26" stroke-width="2" />
+        <!-- Vue d'ensemble -->
+        <div class="feat-section reverse">
+          <div class="feat-content">
+            <div class="feat-icon-wrap icon-amber">
+              <LayoutDashboard :size="26" stroke-width="2" />
+            </div>
+            <h3>Vue d'ensemble</h3>
+            <p>Tâches du jour, séries sportives et priorités — un seul coup d'œil.</p>
           </div>
-          <h3>Vue d'ensemble</h3>
-          <p>Tout au même endroit. Tâches du jour, séries sportives, priorités — un seul coup d'œil sur votre journée.</p>
-          <ul class="feat-checks">
-            <li><Check :size="16" /> Vue agrégée</li>
-            <li><Check :size="16" /> Graphique de régularité</li>
-            <li><Check :size="16" /> Aperçu instantané</li>
-          </ul>
+          <div class="feat-preview">
+            <div class="fp-card card-amber-bg">
+              <div class="fp-bar">
+                <div class="fp-dots"><span /><span /><span /></div>
+                <span class="fp-title">Tableau de bord</span>
+              </div>
+              <div class="fp-body">
+                <div class="fp-dashboard">
+                  <div class="fp-dash-left">
+                    <div class="fp-dash-label">Tâches du jour</div>
+                    <div class="fp-dash-task"><span class="fp-check done" />Routine matinale</div>
+                    <div class="fp-dash-task"><span class="fp-check done" />Lire 30 min</div>
+                    <div class="fp-dash-task"><span class="fp-check" />Méditer</div>
+                    <div class="fp-dash-progress">
+                      <div class="fp-dash-track"><div class="fp-dash-fill" style="width: 66%" /></div>
+                      <span>2/3</span>
+                    </div>
+                  </div>
+                  <div class="fp-dash-right">
+                    <div class="fp-dash-mini">
+                      <div class="fp-dash-label">Régularité</div>
+                      <svg class="fp-sparkline" viewBox="0 0 120 32" fill="none">
+                        <path d="M0,20 C10,22 18,26 28,24 C38,22 42,12 52,10 C62,8 67,20 77,22 C87,24 92,10 102,8 C112,6 118,16 120,18" stroke="#1a1815" stroke-width="1.5" stroke-linecap="round" fill="none" />
+                      </svg>
+                    </div>
+                    <div class="fp-dash-mini">
+                      <div class="fp-dash-label">Série</div>
+                      <div class="fp-dash-big">12</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -351,45 +446,20 @@ function handleCta() {
 .hero {
   max-width: 1260px;
   margin: 0 auto;
-  padding: 72px 40px 80px;
+  padding: 88px 40px 96px;
+  text-align: center;
   display: flex;
-  align-items: center;
-  gap: 64px;
+  justify-content: center;
 }
 
-.hero-inner { flex: 1; }
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 14px 5px 8px;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: 100px;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--app-text-muted);
-  margin-bottom: 28px;
-}
-
-.badge-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #22c55e;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+.hero-inner {
+  max-width: 800px;
 }
 
 .hero-inner h1 {
-  font-size: 3.6rem;
+  font-size: 4.2rem;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.04em;
   margin: 0 0 28px;
 }
@@ -398,12 +468,13 @@ function handleCta() {
   font-size: 1.2rem;
   color: var(--app-text-muted);
   line-height: 1.65;
-  margin: 0 0 36px;
-  max-width: 480px;
+  margin: 0 auto 36px;
+  max-width: 520px;
 }
 
 .hero-ctas {
   display: flex;
+  justify-content: center;
   gap: 12px;
   margin-bottom: 14px;
 }
@@ -426,155 +497,6 @@ function handleCta() {
 .outline-btn {
   font-size: 1rem;
   padding: 14px 28px;
-}
-
-/* ── Product preview ── */
-.hero-preview {
-  flex: 1;
-  max-width: 480px;
-  min-width: 0;
-}
-
-.preview-card {
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow:
-    0 1px 3px rgba(0,0,0,0.04),
-    0 8px 28px rgba(0,0,0,0.07),
-    0 20px 50px rgba(0,0,0,0.04);
-
-}
-
-.preview-lift {
-  transition: transform 0.25s ease;
-}
-
-.preview-lift:hover {
-  transform: translateY(-8px);
-}
-
-.preview-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  background: var(--app-surface-2);
-  border-bottom: 1px solid var(--app-border);
-}
-
-.bar-dots {
-  display: flex;
-  gap: 5px;
-}
-
-.bar-dots span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.bar-dots span:nth-child(1) { background: #fca5a5; }
-.bar-dots span:nth-child(2) { background: #fcd34d; }
-.bar-dots span:nth-child(3) { background: #86efac; }
-
-.bar-title {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--app-text-muted);
-}
-
-.preview-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  padding: 18px;
-}
-
-.preview-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--app-text-dim);
-  margin-bottom: 10px;
-}
-
-.preview-task {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  font-size: 0.84rem;
-  font-weight: 450;
-}
-
-.t-check {
-  width: 15px;
-  height: 15px;
-  border-radius: 4px;
-  border: 1.5px solid var(--app-border-hover);
-  flex-shrink: 0;
-}
-
-.t-check.done {
-  background: var(--app-text);
-  border-color: var(--app-text);
-}
-
-.preview-progress {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.7rem;
-  color: var(--app-text-dim);
-  font-weight: 500;
-}
-
-.progress-track {
-  flex: 1;
-  height: 4px;
-  background: var(--app-surface-3);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--app-text);
-  border-radius: 2px;
-}
-
-.preview-mini-card {
-  background: var(--app-surface-2);
-  border-radius: 10px;
-  padding: 14px;
-}
-
-.mini-chart {
-  width: 100%;
-  height: 44px;
-  margin-bottom: 6px;
-}
-
-.mini-stat {
-  font-size: 0.68rem;
-  color: var(--app-text-dim);
-  font-weight: 500;
-}
-
-.streak-card {
-  margin-top: 10px;
-}
-
-.streak-num {
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  margin-bottom: 2px;
 }
 
 /* ── Trust bar ── */
@@ -622,27 +544,31 @@ function handleCta() {
   padding: 100px 40px;
 }
 
-.feat-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+.feat-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
 }
 
-.feat-card {
-  border-radius: 18px;
-  padding: 36px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.feat-section {
+  display: flex;
+  align-items: center;
+  gap: 56px;
 }
 
-.feat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+.feat-section.reverse {
+  flex-direction: row-reverse;
 }
 
-.card-peach  { background: #fef2ed; }
-.card-blue   { background: #eef3ff; }
-.card-green  { background: #eefbf2; }
-.card-amber  { background: #fef9ec; }
+.feat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.feat-preview {
+  flex: 1.2;
+  min-width: 0;
+}
 
 .feat-icon-wrap {
   width: 48px;
@@ -659,42 +585,337 @@ function handleCta() {
 .icon-green  { background: #bbf7d0; color: #166534; }
 .icon-amber  { background: #fde68a; color: #92400e; }
 
-.feat-card h3 {
-  font-size: 1.35rem;
+.feat-content h3 {
+  font-size: 1.6rem;
   font-weight: 700;
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   letter-spacing: -0.02em;
   color: var(--app-text);
 }
 
-.feat-card p {
+.feat-content p {
   color: #57534e;
   line-height: 1.6;
-  margin: 0 0 18px;
-  font-size: 0.95rem;
-}
-
-.feat-checks {
-  list-style: none;
-  padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+  font-size: 1.05rem;
+  max-width: 380px;
 }
 
-.feat-checks li {
+/* ── Feature previews ── */
+.fp-card {
+  background: #ffffff;
+  border: 1px solid #e2ddd5;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.04),
+    0 8px 28px rgba(0,0,0,0.07),
+    0 20px 50px rgba(0,0,0,0.04);
+  transition: transform 0.25s ease;
+}
+
+.fp-card:hover {
+  transform: translateY(-6px);
+}
+
+.card-peach-bg  { border-color: #f5d0bc; }
+.card-blue-bg   { border-color: #b8c9f5; }
+.card-green-bg  { border-color: #a3e8b8; }
+.card-amber-bg  { border-color: #f0d87a; }
+
+.fp-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.88rem;
-  color: #57534e;
+  padding: 8px 12px;
+  background: #f5f2ed;
+  border-bottom: 1px solid #e2ddd5;
+}
+
+.fp-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.fp-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.fp-dots span:nth-child(1) { background: #fca5a5; }
+.fp-dots span:nth-child(2) { background: #fcd34d; }
+.fp-dots span:nth-child(3) { background: #86efac; }
+
+.fp-title {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #78716c;
+}
+
+.fp-body {
+  padding: 14px;
+}
+
+/* Card 1 — Weekly grid */
+.fp-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fp-grid th {
+  font-weight: 500;
+  color: #a8a29e;
+  padding: 0 0 6px;
+  text-align: center;
+  font-size: 0.6rem;
+}
+
+.fp-grid td {
+  padding: 3px;
+  text-align: center;
+}
+
+.fp-task-name {
+  text-align: left !important;
+  font-weight: 500;
+  color: #1a1815;
+  white-space: nowrap;
+  padding-right: 8px !important;
+  font-size: 0.7rem;
+}
+
+.fp-sq {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: #ebe7e0;
+}
+
+.fp-sq.filled {
+  background: #1a1815;
+}
+
+.fp-summary {
+  margin-top: 8px;
+  font-size: 0.68rem;
+  color: #a8a29e;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Card 2 — Workout sessions */
+.fp-body-workouts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fp-wo-session {
+  background: #faf8f5;
+  border: 1px solid #e2ddd5;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.fp-wo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.fp-wo-title {
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: #1a1815;
+}
+
+.fp-wo-info {
+  font-size: 0.68rem;
+  color: #a8a29e;
   font-weight: 500;
 }
 
-.feat-checks li svg {
-  color: var(--app-text);
+.fp-wo-exercises {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fp-wo-ex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+  color: #57534e;
+  padding: 3px 0;
+}
+
+.fp-wo-name {
+  font-weight: 450;
+}
+
+.fp-wo-detail {
+  font-weight: 600;
+  color: #1a1815;
+  font-size: 0.7rem;
+}
+
+.fp-workout-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #f5f2ed;
+  font-size: 0.68rem;
+  color: #78716c;
+  font-weight: 500;
+}
+
+/* Card 3 — Kanban */
+.fp-kanban {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.fp-col {
+  min-width: 0;
+}
+
+.fp-col-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #78716c;
+}
+
+.fp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   flex-shrink: 0;
+}
+
+.dot-red { background: #ef4444; }
+.dot-orange { background: #f97316; }
+.dot-gray { background: #a8a29e; }
+.dot-light { background: #d4cec5; }
+
+.fp-count {
+  background: #ebe7e0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #78716c;
+  margin-left: auto;
+}
+
+.fp-mini-card {
+  background: #faf8f5;
+  border: 1px solid #e2ddd5;
+  border-radius: 6px;
+  padding: 8px 9px;
+  font-size: 0.72rem;
+  color: #1a1815;
+  margin-bottom: 6px;
+  font-weight: 450;
+  line-height: 1.35;
+}
+
+/* Card 4 — Dashboard */
+.fp-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fp-dash-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a8a29e;
+  margin-bottom: 8px;
+}
+
+.fp-dash-task {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 450;
+  color: #1a1815;
+  padding: 2px 0;
+}
+
+.fp-check {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1.5px solid #d4cec5;
+  flex-shrink: 0;
+}
+
+.fp-check.done {
+  background: #1a1815;
+  border-color: #1a1815;
+}
+
+.fp-dash-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.62rem;
+  color: #a8a29e;
+  font-weight: 500;
+}
+
+.fp-dash-track {
+  flex: 1;
+  height: 3px;
+  background: #ebe7e0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fp-dash-fill {
+  height: 100%;
+  background: #1a1815;
+  border-radius: 2px;
+}
+
+.fp-dash-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fp-dash-mini {
+  background: #f5f2ed;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.fp-sparkline {
+  width: 100%;
+  height: 24px;
+  margin-bottom: 2px;
+}
+
+.fp-dash-big {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #1a1815;
 }
 
 /* ── How ── */
@@ -869,10 +1090,6 @@ function handleCta() {
   to { opacity: 1; }
 }
 
-.hero-badge {
-  animation: fade-up 0.5s ease both;
-}
-
 .hero-inner h1 {
   animation: fade-up 0.5s ease 0.08s both;
 }
@@ -889,14 +1106,10 @@ function handleCta() {
   animation: fade-in 0.5s ease 0.32s both;
 }
 
-.preview-card {
-  animation: fade-up 0.6s ease 0.2s both;
-}
-
-.feat-card:nth-child(1) { animation: fade-up 0.45s ease 0.05s both; }
-.feat-card:nth-child(2) { animation: fade-up 0.45s ease 0.12s both; }
-.feat-card:nth-child(3) { animation: fade-up 0.45s ease 0.19s both; }
-.feat-card:nth-child(4) { animation: fade-up 0.45s ease 0.26s both; }
+.feat-section:nth-child(1) { animation: fade-up 0.45s ease 0.05s both; }
+.feat-section:nth-child(2) { animation: fade-up 0.45s ease 0.12s both; }
+.feat-section:nth-child(3) { animation: fade-up 0.45s ease 0.19s both; }
+.feat-section:nth-child(4) { animation: fade-up 0.45s ease 0.26s both; }
 
 .step:nth-child(1) { animation: fade-up 0.45s ease 0.05s both; }
 .step:nth-child(3) { animation: fade-up 0.45s ease 0.15s both; }
@@ -909,15 +1122,20 @@ function handleCta() {
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .hero {
-    flex-direction: column;
-    padding: 48px 24px 56px;
-    gap: 40px;
+    padding: 56px 24px 64px;
   }
 
   .hero-inner h1 { font-size: 3rem; }
-  .hero-preview { max-width: 100%; }
 
-  .feat-grid { grid-template-columns: 1fr; }
+  .feat-section,
+  .feat-section.reverse {
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .feat-sections { gap: 56px; }
+
+  .feat-content p { max-width: 100%; }
 
   .section-header h2 { font-size: 2.6rem; }
 }
@@ -926,12 +1144,12 @@ function handleCta() {
   .nav-center { display: none; }
   .nav { padding: 12px 20px; }
 
-  .hero { padding: 40px 20px 48px; }
+  .hero { padding: 48px 20px 56px; }
   .hero-inner h1 { font-size: 2.4rem; }
   .hero-ctas { flex-direction: column; }
   .hero-sub { font-size: 1.05rem; }
 
-  .preview-body { grid-template-columns: 1fr; }
+  .fp-kanban { grid-template-columns: repeat(2, 1fr); }
 
   .features { padding: 72px 20px; }
   .how { padding: 72px 20px; }
@@ -961,5 +1179,6 @@ function handleCta() {
 @media (max-width: 480px) {
   .hero-inner h1 { font-size: 2rem; }
   .section-header h2 { font-size: 2rem; }
+  .fp-dashboard { grid-template-columns: 1fr; }
 }
 </style>

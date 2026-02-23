@@ -12,6 +12,9 @@ from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.analytics import UserAnalytics
+    from app.models.bank_account import BankAccount
+    from app.models.budget_subscription import BudgetSubscription
+    from app.models.budget_transaction import BudgetTransaction
     from app.models.daily_task import DailyTask
     from app.models.daily_task_completion import DailyTaskCompletion
     from app.models.monthly_usage import MonthlyUsage
@@ -93,6 +96,18 @@ class User(Base, TimestampMixin):
         cascade="all, delete-orphan",
     )
     workout_presets: Mapped[list[WorkoutPreset]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    budget_transactions: Mapped[list[BudgetTransaction]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    budget_subscriptions: Mapped[list[BudgetSubscription]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    bank_accounts: Mapped[list[BankAccount]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

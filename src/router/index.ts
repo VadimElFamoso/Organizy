@@ -2,10 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior(to, _from, savedPosition) {
-    if (savedPosition) return savedPosition
+  scrollBehavior(to) {
     if (to.hash) return { el: to.hash, behavior: 'smooth' }
-    return { top: 0, behavior: 'smooth' }
+    return { top: 0 }
   },
   routes: [
     {
@@ -50,6 +49,12 @@ const router = createRouter({
       meta: { title: 'Todos — Organizy' },
     },
     {
+      path: '/budget',
+      name: 'budget',
+      component: () => import('@/pages/BudgetPage.vue'),
+      meta: { title: 'Budget — Organizy' },
+    },
+    {
       path: '/pricing',
       name: 'pricing',
       component: () => import('@/pages/PricingPage.vue'),
@@ -61,12 +66,23 @@ const router = createRouter({
       component: () => import('@/pages/SettingsPage.vue'),
       meta: { title: 'Paramètres — Organizy' },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/pages/NotFoundPage.vue'),
+      meta: { title: 'Page introuvable — Organizy' },
+    },
   ],
 })
 
-router.afterEach((to) => {
+router.afterEach((to, from) => {
   const title = to.meta.title as string | undefined
   if (title) document.title = title
+  if (to.path !== from.path && !to.hash) {
+    window.scrollTo({ top: 0, left: 0 })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
 })
 
 export default router

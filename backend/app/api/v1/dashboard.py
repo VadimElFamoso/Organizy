@@ -8,11 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, has_active_subscription
+from app.models.budget_subscription import BudgetSubscription
+from app.models.budget_transaction import BudgetTransaction
 from app.models.daily_task import DailyTask
 from app.models.daily_task_completion import DailyTaskCompletion
 from app.models.todo_item import TodoItem
-from app.models.user import User
+from app.models.user import SubscriptionPlan, User
 from app.models.workout import Workout
 from app.schemas.daily_task import DailyTaskResponse, CompletionResponse
 from app.schemas.todo import TodoResponse
@@ -31,11 +33,19 @@ class TodayTaskItem(BaseModel):
     completed: bool
 
 
+class BudgetSummaryItem(BaseModel):
+    month_balance: float
+    total_income: float
+    total_expenses: float
+    upcoming_count: int
+
+
 class DashboardResponse(BaseModel):
     today_tasks: list[TodayTaskItem]
     year_days: list[dict]  # Simplified year stats
     workout_summary: WorkoutSummary
     top_todos: list[TodoResponse]
+    budget_summary: BudgetSummaryItem | None = None
 
 
 @router.get("/", response_model=DashboardResponse)
@@ -145,11 +155,22 @@ async def get_dashboard(
     # Process top todos
     top_todos = top_todos_result.scalars().all()
 
+    # Budget summary for Pro users
+    budget_summary = None
+    is_pro = (
+        has_active_subscription(current_user)
+        and current_user.subscription_plan
+        in (SubscriptionPlan.PRO.value, SubscriptionPlan.UNLIMITED.value)
+    )
+    if is_pro:
+        budget_summary = await _get_budget_summary(db, current_user)
+
     return DashboardResponse(
         today_tasks=today_tasks,
         year_days=year_days,
         workout_summary=workout_summary_data,
         top_todos=top_todos,
+        budget_summary=budget_summary,
     )
 
 
@@ -208,4 +229,54 @@ async def _get_workout_summary(db: AsyncSession, user: User) -> WorkoutSummary:
         current_streak=streak,
         last_workout=last_workout,
         today_workouts=today_workouts,
+    )
+
+
+async def _get_budget_summary(db: AsyncSession, user: User) -> BudgetSummaryItem:
+    """Get budget summary for dashboard (Pro users only)."""
+    from decimal import Decimal
+
+    from app.api.v1.budget import compute_next_billing
+
+    today = date.today()
+
+    # Month balance
+    income_result = await db.execute(
+        select(func.coalesce(func.sum(BudgetTransaction.amount), 0)).where(
+            BudgetTransaction.user_id == user.id,
+            BudgetTransaction.type == "income",
+            func.extract("year", BudgetTransaction.transaction_date) == today.year,
+            func.extract("month", BudgetTransaction.transaction_date) == today.month,
+        )
+    )
+    expense_result = await db.execute(
+        select(func.coalesce(func.sum(BudgetTransaction.amount), 0)).where(
+            BudgetTransaction.user_id == user.id,
+            BudgetTransaction.type == "expense",
+            func.extract("year", BudgetTransaction.transaction_date) == today.year,
+            func.extract("month", BudgetTransaction.transaction_date) == today.month,
+        )
+    )
+    income = income_result.scalar() or Decimal("0")
+    expenses = expense_result.scalar() or Decimal("0")
+
+    # Upcoming subscription count
+    subs_result = await db.execute(
+        select(BudgetSubscription).where(
+            BudgetSubscription.user_id == user.id,
+            BudgetSubscription.is_active == True,  # noqa: E712
+        )
+    )
+    subscriptions = subs_result.scalars().all()
+    cutoff = today + timedelta(days=30)
+    upcoming_count = sum(
+        1 for sub in subscriptions
+        if compute_next_billing(sub.start_date, sub.frequency) <= cutoff
+    )
+
+    return BudgetSummaryItem(
+        month_balance=float(income - expenses),
+        total_income=float(income),
+        total_expenses=float(expenses),
+        upcoming_count=upcoming_count,
     )

@@ -19,6 +19,7 @@ import {
   LayoutDashboard,
   Dumbbell,
   ListTodo,
+  Wallet,
 } from 'lucide-vue-next'
 import type { User as UserType } from '@/services/api'
 
@@ -66,6 +67,7 @@ const navLinks = [
   { to: '/daily-tasks', label: 'Tâches quotidiennes', icon: CalendarCheck },
   { to: '/workouts', label: 'Sport', icon: Dumbbell },
   { to: '/todos', label: 'Tâches', icon: ListTodo },
+  { to: '/budget', label: 'Budget', icon: Wallet },
 ]
 
 function isActive(path: string) {

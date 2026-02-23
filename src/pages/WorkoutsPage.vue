@@ -314,6 +314,7 @@ async function handleLogout() {
           <div class="calendar-column">
             <WorkoutCalendar
               :days="calendarDays"
+              :min-date="user?.created_at"
               @month-change="handleMonthChange"
               @day-click="handleDayClick"
             />

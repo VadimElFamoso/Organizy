@@ -6,6 +6,7 @@ export interface SubscriptionState {
   isActive: ComputedRef<boolean>
   isCanceled: ComputedRef<boolean>
   isPastDue: ComputedRef<boolean>
+  isPro: ComputedRef<boolean>
   hasAccess: ComputedRef<boolean>
   needsSubscription: ComputedRef<boolean>
   trialDaysRemaining: ComputedRef<number>
@@ -39,6 +40,11 @@ export function useSubscription(user: Ref<User | null>): SubscriptionState {
   const hasAccess = computed(() => isActive.value || isTrialing.value || isCanceled.value)
   const needsSubscription = computed(() => !hasAccess.value)
 
+  const isPro = computed(() => {
+    const plan = user.value?.subscription_plan
+    return hasAccess.value && (plan === 'pro' || plan === 'unlimited')
+  })
+
   const statusLabel = computed(() => {
     if (isActive.value) return 'Pro'
     if (isTrialing.value) return 'Trial'
@@ -60,6 +66,7 @@ export function useSubscription(user: Ref<User | null>): SubscriptionState {
     isActive,
     isCanceled,
     isPastDue,
+    isPro,
     hasAccess,
     needsSubscription,
     trialDaysRemaining,

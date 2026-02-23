@@ -160,11 +160,95 @@ export interface TodayTaskItem {
   completed: boolean
 }
 
+// ==========================================================================
+// Budget Types
+// ==========================================================================
+
+export interface BankAccount {
+  id: string
+  name: string
+  type: 'courant' | 'epargne' | 'prepaye'
+  initial_balance: number
+  is_default: boolean
+  computed_balance: number
+  created_at: string
+}
+
+export interface BudgetTransaction {
+  id: string
+  type: 'expense' | 'income'
+  amount: number
+  category: string
+  description?: string | null
+  transaction_date: string
+  bank_account_id?: string | null
+  bank_account_name?: string | null
+  created_at: string
+}
+
+export interface BudgetSubscription {
+  id: string
+  name: string
+  amount: number
+  category: string
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly'
+  start_date: string
+  description?: string | null
+  is_active: boolean
+  bank_account_id?: string | null
+  bank_account_name?: string | null
+  created_at: string
+}
+
+export interface CategoryBreakdown {
+  category: string
+  total: number
+}
+
+export interface BudgetMonthlySummary {
+  start: string
+  end: string
+  total_income: number
+  total_expenses: number
+  balance: number
+  account_balance: number
+  income_by_category: CategoryBreakdown[]
+  expenses_by_category: CategoryBreakdown[]
+}
+
+export interface ComparisonBucket {
+  label: string
+  income: number
+  expenses: number
+}
+
+export interface BalancePoint {
+  date: string
+  balance: number
+}
+
+export interface UpcomingBilling {
+  subscription_id: string
+  name: string
+  amount: number
+  category: string
+  frequency: string
+  next_date: string
+}
+
+export interface BudgetSummaryItem {
+  month_balance: number
+  total_income: number
+  total_expenses: number
+  upcoming_count: number
+}
+
 export interface DashboardData {
   today_tasks: TodayTaskItem[]
   year_days: DayStats[]
   workout_summary: WorkoutSummary
   top_todos: TodoItem[]
+  budget_summary: BudgetSummaryItem | null
 }
 
 interface SessionResponse {
@@ -501,6 +585,132 @@ class ApiClient {
 
   async getTopTodos(limit = 5): Promise<TodoItem[]> {
     return this.fetch<TodoItem[]>(`/todos/top?limit=${limit}`)
+  }
+
+  // ==========================================================================
+  // Budget — Bank Accounts
+  // ==========================================================================
+
+  async getBankAccounts(): Promise<BankAccount[]> {
+    return this.fetch<BankAccount[]>('/budget/accounts')
+  }
+
+  async createBankAccount(data: { name: string; type: string; initial_balance?: number; is_default?: boolean }): Promise<BankAccount> {
+    return this.fetch<BankAccount>('/budget/accounts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async setupBankAccounts(accounts: { name: string; type: string; initial_balance?: number; is_default?: boolean }[]): Promise<BankAccount[]> {
+    return this.fetch<BankAccount[]>('/budget/accounts/setup', {
+      method: 'POST',
+      body: JSON.stringify({ accounts }),
+    })
+  }
+
+  async updateBankAccount(id: string, data: Partial<{ name: string; type: string; initial_balance: number; is_default: boolean }>): Promise<BankAccount> {
+    return this.fetch<BankAccount>(`/budget/accounts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteBankAccount(id: string): Promise<void> {
+    return this.fetch(`/budget/accounts/${id}`, { method: 'DELETE' })
+  }
+
+  // ==========================================================================
+  // Budget — Transactions & Subscriptions
+  // ==========================================================================
+
+  async getBudgetTransactions(params?: { start?: string; end?: string; type?: string; category?: string; bank_account_id?: string }): Promise<BudgetTransaction[]> {
+    const query = new URLSearchParams()
+    if (params?.start) query.set('start', params.start)
+    if (params?.end) query.set('end', params.end)
+    if (params?.type) query.set('type', params.type)
+    if (params?.category) query.set('category', params.category)
+    if (params?.bank_account_id) query.set('bank_account_id', params.bank_account_id)
+    const qs = query.toString()
+    return this.fetch<BudgetTransaction[]>(`/budget/transactions${qs ? `?${qs}` : ''}`)
+  }
+
+  async createBudgetTransaction(data: { type: string; amount: number; category: string; description?: string; transaction_date: string; bank_account_id?: string | null }): Promise<BudgetTransaction> {
+    return this.fetch<BudgetTransaction>('/budget/transactions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateBudgetTransaction(id: string, data: Partial<{ type: string; amount: number; category: string; description: string | null; transaction_date: string; bank_account_id: string | null }>): Promise<BudgetTransaction> {
+    return this.fetch<BudgetTransaction>(`/budget/transactions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteBudgetTransaction(id: string): Promise<void> {
+    return this.fetch(`/budget/transactions/${id}`, { method: 'DELETE' })
+  }
+
+  async getBudgetSubscriptions(params?: { bank_account_id?: string }): Promise<BudgetSubscription[]> {
+    const query = new URLSearchParams()
+    if (params?.bank_account_id) query.set('bank_account_id', params.bank_account_id)
+    const qs = query.toString()
+    return this.fetch<BudgetSubscription[]>(`/budget/subscriptions${qs ? `?${qs}` : ''}`)
+  }
+
+  async createBudgetSubscription(data: { name: string; amount: number; category: string; frequency: string; start_date: string; description?: string; bank_account_id?: string | null }): Promise<BudgetSubscription> {
+    return this.fetch<BudgetSubscription>('/budget/subscriptions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateBudgetSubscription(id: string, data: Partial<{ name: string; amount: number; category: string; frequency: string; start_date: string; description: string | null; is_active: boolean; bank_account_id: string | null }>): Promise<BudgetSubscription> {
+    return this.fetch<BudgetSubscription>(`/budget/subscriptions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteBudgetSubscription(id: string): Promise<void> {
+    return this.fetch(`/budget/subscriptions/${id}`, { method: 'DELETE' })
+  }
+
+  // ==========================================================================
+  // Budget — Summary & Analytics
+  // ==========================================================================
+
+  async getBudgetSummary(start: string, end: string, bankAccountId?: string): Promise<BudgetMonthlySummary> {
+    const query = new URLSearchParams({ start, end })
+    if (bankAccountId) query.set('bank_account_id', bankAccountId)
+    return this.fetch<BudgetMonthlySummary>(`/budget/summary?${query}`)
+  }
+
+  async getBudgetComparison(start: string, end: string, groupBy: string, bankAccountId?: string): Promise<ComparisonBucket[]> {
+    const query = new URLSearchParams({ start, end, group_by: groupBy })
+    if (bankAccountId) query.set('bank_account_id', bankAccountId)
+    return this.fetch<ComparisonBucket[]>(`/budget/summary/comparison?${query}`)
+  }
+
+  async getBudgetBalanceHistory(start: string, end: string, bankAccountId?: string): Promise<BalancePoint[]> {
+    const query = new URLSearchParams({ start, end })
+    if (bankAccountId) query.set('bank_account_id', bankAccountId)
+    return this.fetch<BalancePoint[]>(`/budget/summary/balance-history?${query}`)
+  }
+
+  async getBudgetCategories(type: 'income' | 'expense', start: string, end: string, bankAccountId?: string): Promise<CategoryBreakdown[]> {
+    const query = new URLSearchParams({ type, start, end })
+    if (bankAccountId) query.set('bank_account_id', bankAccountId)
+    return this.fetch<CategoryBreakdown[]>(`/budget/summary/categories?${query}`)
+  }
+
+  async getBudgetUpcoming(bankAccountId?: string): Promise<UpcomingBilling[]> {
+    const query = new URLSearchParams()
+    if (bankAccountId) query.set('bank_account_id', bankAccountId)
+    const qs = query.toString()
+    return this.fetch<UpcomingBilling[]>(`/budget/subscriptions/upcoming${qs ? `?${qs}` : ''}`)
   }
 
   // ==========================================================================

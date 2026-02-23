@@ -1,14 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { CalendarCheck, Check } from 'lucide-vue-next'
 import type { TodayTaskItem } from '@/services/api'
 
-defineProps<{
+const props = defineProps<{
   tasks: TodayTaskItem[]
 }>()
 
 const emit = defineEmits<{
   toggle: [taskId: string]
 }>()
+
+const doneCount = computed(() => props.tasks.filter(t => t.completed).length)
+const totalCount = computed(() => props.tasks.length)
+const progressPct = computed(() => totalCount.value === 0 ? 0 : Math.round((doneCount.value / totalCount.value) * 100))
 </script>
 
 <template>
@@ -33,6 +38,12 @@ const emit = defineEmits<{
         </div>
         <span class="task-name">{{ item.task.name }}</span>
       </div>
+    </div>
+    <div v-if="tasks.length > 0" class="progress-bar">
+      <div class="progress-track">
+        <div class="progress-fill" :style="{ width: progressPct + '%' }" />
+      </div>
+      <span class="progress-label">{{ doneCount }} sur {{ totalCount }} faites</span>
     </div>
   </div>
 </template>
@@ -66,6 +77,35 @@ const emit = defineEmits<{
 
 .empty p {
   margin: 0;
+}
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 4px;
+  background: var(--app-surface-3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--app-text);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progress-label {
+  font-size: 0.72rem;
+  color: var(--app-text-dim);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .task-list {
