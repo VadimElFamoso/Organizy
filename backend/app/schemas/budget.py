@@ -49,7 +49,7 @@ class TransactionCreate(BaseModel):
     category: str = Field(max_length=100)
     description: str | None = Field(default=None, max_length=2000)
     transaction_date: date
-    bank_account_id: UUID | None = None
+    bank_account_id: UUID
 
 
 class TransactionUpdate(BaseModel):
@@ -82,7 +82,7 @@ class SubscriptionCreate(BaseModel):
     frequency: str = Field(pattern=r"^(daily|weekly|monthly|yearly)$")
     start_date: date
     description: str | None = Field(default=None, max_length=2000)
-    bank_account_id: UUID | None = None
+    bank_account_id: UUID
 
 
 class SubscriptionUpdate(BaseModel):

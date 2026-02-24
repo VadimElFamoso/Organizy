@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import { Dumbbell, Flame, Clock, ChevronDown } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { RouterLink } from 'vue-router'
+import { Dumbbell, Flame, Clock, ChevronDown, ArrowRight } from 'lucide-vue-next'
 import type { WorkoutSummary } from '@/services/api'
 
-defineProps<{
+const MAX_WORKOUTS = 2
+
+const props = defineProps<{
   summary: WorkoutSummary | null
 }>()
 
 const expandedId = ref<string | null>(null)
+
+const visibleWorkouts = computed(() => props.summary?.today_workouts.slice(0, MAX_WORKOUTS) || [])
+const hiddenCount = computed(() => Math.max(0, (props.summary?.today_workouts.length || 0) - MAX_WORKOUTS))
 
 function toggleExpand(id: string) {
   expandedId.value = expandedId.value === id ? null : id
@@ -35,54 +41,60 @@ function formatDuration(minutes: number): string {
     </div>
 
     <template v-else>
-      <!-- Compact stats row -->
-      <div class="stats-row">
-        <div class="stat-pill">
-          <Dumbbell :size="13" class="stat-pill-icon" />
-          <span class="stat-pill-value">{{ summary.total_workouts }}</span>
-          <span class="stat-pill-label">séances</span>
-        </div>
-        <div class="stat-pill">
-          <Flame :size="13" class="stat-pill-icon" />
-          <span class="stat-pill-value">{{ summary.current_streak }}</span>
-          <span class="stat-pill-label">j. consécutifs</span>
+      <div class="main-content">
+        <div class="stats-row">
+          <div class="stat-pill">
+            <Dumbbell :size="13" class="stat-pill-icon" />
+            <span class="stat-pill-value">{{ summary.total_workouts }}</span>
+            <span class="stat-pill-label">séances</span>
+          </div>
+          <div class="stat-pill">
+            <Flame :size="13" class="stat-pill-icon" />
+            <span class="stat-pill-value">{{ summary.current_streak }}</span>
+            <span class="stat-pill-label">j. consécutifs</span>
+          </div>
         </div>
       </div>
 
-      <!-- Today's workouts -->
       <div class="today-section">
         <div class="today-label">Aujourd'hui</div>
         <div v-if="summary.today_workouts.length === 0" class="today-empty">
-          Pas encore de séance aujourd'hui.
+          Pas encore de séance.
         </div>
-        <div v-else class="today-list">
-          <div v-for="w in summary.today_workouts" :key="w.id" class="today-session">
-            <div class="today-session-header" @click="w.exercises.length > 0 && toggleExpand(w.id)">
-              <span class="today-session-type">{{ w.workout_type }}</span>
-              <div class="today-session-right">
-                <span v-if="w.exercises.length > 0" class="today-session-count">
-                  {{ w.exercises.length }} ex.
-                </span>
-                <span v-if="w.duration_minutes" class="today-session-duration">
-                  <Clock :size="11" />
-                  {{ formatDuration(w.duration_minutes) }}
-                </span>
-                <ChevronDown
-                  v-if="w.exercises.length > 0"
-                  :size="13"
-                  class="today-session-chevron"
-                  :class="{ rotated: expandedId === w.id }"
-                />
+        <template v-else>
+          <div class="today-list">
+            <div v-for="w in visibleWorkouts" :key="w.id" class="today-session">
+              <div class="today-session-header" @click="w.exercises.length > 0 && toggleExpand(w.id)">
+                <span class="today-session-type">{{ w.workout_type }}</span>
+                <div class="today-session-right">
+                  <span v-if="w.exercises.length > 0" class="today-session-count">
+                    {{ w.exercises.length }} ex.
+                  </span>
+                  <span v-if="w.duration_minutes" class="today-session-duration">
+                    <Clock :size="11" />
+                    {{ formatDuration(w.duration_minutes) }}
+                  </span>
+                  <ChevronDown
+                    v-if="w.exercises.length > 0"
+                    :size="13"
+                    class="today-session-chevron"
+                    :class="{ rotated: expandedId === w.id }"
+                  />
+                </div>
               </div>
-            </div>
-            <div v-if="expandedId === w.id && w.exercises.length > 0" class="today-session-body">
-              <div v-for="ex in w.exercises" :key="ex.id || ex.sort_order" class="today-exercise">
-                <span class="today-exercise-name">{{ ex.name }}</span>
-                <span v-if="ex.notes" class="today-exercise-notes">{{ ex.notes }}</span>
+              <div v-if="expandedId === w.id && w.exercises.length > 0" class="today-session-body">
+                <div v-for="ex in w.exercises" :key="ex.id || ex.sort_order" class="today-exercise">
+                  <span class="today-exercise-name">{{ ex.name }}</span>
+                  <span v-if="ex.notes" class="today-exercise-notes">{{ ex.notes }}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+          <RouterLink v-if="hiddenCount > 0" to="/workouts" class="more-link">
+            +{{ hiddenCount }} séance{{ hiddenCount > 1 ? 's' : '' }} de plus
+            <ArrowRight :size="11" />
+          </RouterLink>
+        </template>
       </div>
     </template>
   </div>
@@ -94,6 +106,10 @@ function formatDuration(minutes: number): string {
   border: 1px solid var(--app-border);
   border-radius: 12px;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .section-title {
@@ -104,7 +120,7 @@ function formatDuration(minutes: number): string {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin: 0 0 14px;
+  margin: 0;
   color: var(--app-text-dim);
 }
 
@@ -112,18 +128,28 @@ function formatDuration(minutes: number): string {
   color: var(--app-text-muted);
   font-size: 0.875rem;
   text-align: center;
-  padding: 16px 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty p {
   margin: 0;
 }
 
-/* Compact stat pills */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 0;
+}
+
 .stats-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 
 .stat-pill {
@@ -151,10 +177,10 @@ function formatDuration(minutes: number): string {
   font-weight: 500;
 }
 
-/* Today section */
 .today-section {
   border-top: 1px solid var(--app-border);
   padding-top: 12px;
+  margin-top: auto;
 }
 
 .today-label {
@@ -169,7 +195,6 @@ function formatDuration(minutes: number): string {
 .today-empty {
   color: var(--app-text-muted);
   font-size: 0.82rem;
-  padding: 8px 0;
 }
 
 .today-list {
@@ -195,6 +220,10 @@ function formatDuration(minutes: number): string {
 .today-session-type {
   font-weight: 600;
   font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .today-session-right {
@@ -262,5 +291,21 @@ function formatDuration(minutes: number): string {
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+}
+
+.more-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--app-text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+  margin-top: 8px;
+}
+
+.more-link:hover {
+  color: var(--app-text);
 }
 </style>

@@ -3,26 +3,26 @@ import { ref, nextTick } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Pencil, Trash2 } from 'lucide-vue-next'
+import { Pencil } from 'lucide-vue-next'
 import TaskCard from './TaskCard.vue'
 import ColorPicker from './ColorPicker.vue'
 import type { TaskItem } from '@/services/api'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   title: string
   columnId: string
   color: string
   items: TaskItem[]
-  canEdit?: boolean
-  canDelete?: boolean
-}>()
+  showTitle?: boolean
+}>(), {
+  showTitle: true,
+})
 
 const emit = defineEmits<{
   'update:items': [items: TaskItem[]]
   toggle: [id: string]
   delete: [id: string]
   updateColumn: [data: { name?: string; color?: string }]
-  deleteColumn: []
   openDetail: [task: TaskItem]
 }>()
 
@@ -31,7 +31,6 @@ const editName = ref('')
 const editColor = ref('')
 
 function startEdit() {
-  if (!props.canEdit) return
   editName.value = props.title
   editColor.value = props.color
   isEditingName.value = true
@@ -65,10 +64,10 @@ function onUpdate(items: TaskItem[]) {
 </script>
 
 <template>
-  <div class="kanban-column">
-    <div class="column-header">
+  <div class="quadrant">
+    <div v-if="showTitle" class="quadrant-header">
       <div class="header-left">
-        <div class="priority-dot" :style="{ background: color }" />
+        <div class="color-dot" :style="{ background: color }" />
         <template v-if="isEditingName">
           <div ref="editGroupRef" class="edit-group" @focusout="handleEditFocusOut">
             <Input
@@ -83,29 +82,23 @@ function onUpdate(items: TaskItem[]) {
           </div>
         </template>
         <template v-else>
-          <span class="column-title" @click="startEdit" :class="{ editable: canEdit }">
+          <span class="quadrant-title" @click="startEdit">
             {{ title }}
-            <Pencil v-if="canEdit" :size="10" class="edit-icon" />
+            <Pencil :size="10" class="edit-icon" />
           </span>
         </template>
-        <span v-if="!isEditingName" class="column-count">{{ items.length }}</span>
+        <span v-if="!isEditingName" class="quadrant-count">{{ items.length }}</span>
       </div>
-      <Button
-        v-if="canDelete && !isEditingName"
-        variant="ghost"
-        size="sm"
-        class="col-delete-btn"
-        @click="emit('deleteColumn')"
-      >
-        <Trash2 :size="12" />
-      </Button>
+    </div>
+    <div v-else class="quadrant-header-minimal">
+      <span class="quadrant-count">{{ items.length }}</span>
     </div>
 
     <VueDraggable
       :model-value="items"
       @update:model-value="onUpdate"
-      group="kanban"
-      class="column-content"
+      group="eisenhower"
+      class="quadrant-content"
       item-key="id"
       :animation="150"
       ghost-class="ghost"
@@ -123,7 +116,7 @@ function onUpdate(items: TaskItem[]) {
 </template>
 
 <style scoped>
-.kanban-column {
+.quadrant {
   background: var(--app-surface-2, #f5f2ed);
   border-radius: 12px;
   padding: 12px;
@@ -132,18 +125,19 @@ function onUpdate(items: TaskItem[]) {
   flex-direction: column;
 }
 
-.column-header {
+.quadrant-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-  padding: 0 4px 10px;
-  border-bottom: 1px solid var(--app-border, #e2ddd5);
-  cursor: grab;
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
 
-.column-header:active {
-  cursor: grabbing;
+.quadrant-header-minimal {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+  padding: 0 4px;
 }
 
 .header-left {
@@ -154,7 +148,7 @@ function onUpdate(items: TaskItem[]) {
   min-width: 0;
 }
 
-.priority-dot {
+.color-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -168,19 +162,16 @@ function onUpdate(items: TaskItem[]) {
   flex: 1;
 }
 
-.column-title {
+.quadrant-title {
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--app-text-dim);
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
-}
-
-.column-title.editable {
-  cursor: pointer;
 }
 
 .edit-icon {
@@ -189,16 +180,16 @@ function onUpdate(items: TaskItem[]) {
   color: var(--app-text-dim);
 }
 
-.column-title:hover .edit-icon {
+.quadrant-title:hover .edit-icon {
   opacity: 1;
 }
 
 .name-input {
-  max-width: 140px;
+  max-width: 180px;
   font-size: 0.72rem;
 }
 
-.column-count {
+.quadrant-count {
   font-size: 0.65rem;
   color: var(--app-text-muted);
   background: var(--app-surface-3);
@@ -207,19 +198,7 @@ function onUpdate(items: TaskItem[]) {
   font-weight: 500;
 }
 
-.col-delete-btn {
-  opacity: 0;
-  transition: opacity 0.15s;
-  padding: 4px;
-  height: auto;
-  color: var(--app-text-dim);
-}
-
-.kanban-column:hover .col-delete-btn {
-  opacity: 1;
-}
-
-.column-content {
+.quadrant-content {
   flex: 1;
   display: flex;
   flex-direction: column;

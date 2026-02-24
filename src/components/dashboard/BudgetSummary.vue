@@ -19,20 +19,22 @@ function formatAmount(val: number | string): string {
       <span class="card-label">Budget du mois</span>
     </div>
 
-    <div class="card-balance">
-      <span :class="['balance-value', Number(summary.month_balance) >= 0 ? 'positive' : 'negative']">
-        {{ Number(summary.month_balance) >= 0 ? '+' : '' }}{{ formatAmount(summary.month_balance) }}€
-      </span>
-    </div>
-
-    <div class="card-breakdown">
-      <div class="breakdown-item">
-        <TrendingUp :size="13" class="income-icon" />
-        <span class="breakdown-value income-text">+{{ formatAmount(summary.total_income) }}€</span>
+    <div class="card-main">
+      <div class="card-balance">
+        <span :class="['balance-value', Number(summary.month_balance) >= 0 ? 'positive' : 'negative']">
+          {{ Number(summary.month_balance) >= 0 ? '+' : '' }}{{ formatAmount(summary.month_balance) }}€
+        </span>
       </div>
-      <div class="breakdown-item">
-        <TrendingDown :size="13" class="expense-icon" />
-        <span class="breakdown-value expense-text">-{{ formatAmount(summary.total_expenses) }}€</span>
+
+      <div class="card-breakdown">
+        <div class="breakdown-item">
+          <TrendingUp :size="13" class="income-icon" />
+          <span class="breakdown-value income-text">+{{ formatAmount(summary.total_income) }}€</span>
+        </div>
+        <div class="breakdown-item">
+          <TrendingDown :size="13" class="expense-icon" />
+          <span class="breakdown-value expense-text">-{{ formatAmount(summary.total_expenses) }}€</span>
+        </div>
       </div>
     </div>
 
@@ -52,7 +54,10 @@ function formatAmount(val: number | string): string {
   text-decoration: none;
   color: var(--app-text);
   transition: border-color 0.15s;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .budget-summary-card:hover {
@@ -63,7 +68,6 @@ function formatAmount(val: number | string): string {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
 .card-header svg {
@@ -78,12 +82,22 @@ function formatAmount(val: number | string): string {
   color: var(--app-text-dim);
 }
 
+.card-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 0;
+}
+
 .card-balance {
-  margin-bottom: 10px;
+  /* no margin needed, flexbox handles spacing */
 }
 
 .balance-value {
-  font-size: 1.4rem;
+  font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -94,7 +108,6 @@ function formatAmount(val: number | string): string {
 .card-breakdown {
   display: flex;
   gap: 14px;
-  margin-bottom: 10px;
 }
 
 .breakdown-item {
@@ -104,7 +117,7 @@ function formatAmount(val: number | string): string {
 }
 
 .breakdown-value {
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
@@ -120,7 +133,8 @@ function formatAmount(val: number | string): string {
   font-size: 0.78rem;
   color: var(--app-text-muted);
   border-top: 1px solid var(--app-border);
-  padding-top: 10px;
+  padding-top: 12px;
+  margin-top: auto;
 }
 
 .card-upcoming svg {

@@ -34,6 +34,8 @@ const formBankAccountId = ref<string | null>(null)
 
 const frequencies = Object.entries(FREQUENCY_LABELS)
 
+const hasAccounts = computed(() => (props.bankAccounts?.length ?? 0) > 0)
+
 const defaultAccountId = computed(() => {
   const def = props.bankAccounts?.find(a => a.is_default)
   return def?.id ?? null
@@ -63,7 +65,7 @@ watch(() => props.open, (isOpen) => {
 })
 
 function handleSave() {
-  if (!formName.value || !formAmount.value || !formCategory.value || !formStartDate.value) return
+  if (!formName.value || !formAmount.value || !formCategory.value || !formStartDate.value || !formBankAccountId.value) return
   emit('save', {
     name: formName.value,
     amount: parseFloat(formAmount.value),
@@ -71,7 +73,7 @@ function handleSave() {
     frequency: formFrequency.value,
     start_date: formStartDate.value,
     description: formDescription.value || undefined,
-    bank_account_id: formBankAccountId.value || undefined,
+    bank_account_id: formBankAccountId.value,
   })
 }
 </script>
@@ -118,14 +120,15 @@ function handleSave() {
           </select>
         </div>
 
-        <div v-if="bankAccounts && bankAccounts.length > 0" class="form-row">
+        <div class="form-row">
           <label class="form-label">Compte</label>
-          <select v-model="formBankAccountId" class="form-select">
-            <option :value="null">Aucun compte</option>
+          <select v-if="hasAccounts" v-model="formBankAccountId" class="form-select">
+            <option value="" disabled>Choisir un compte</option>
             <option v-for="acc in bankAccounts" :key="acc.id" :value="acc.id">
               {{ acc.name }}
             </option>
           </select>
+          <p v-else class="no-accounts-hint">Créez un compte bancaire dans l'onglet Comptes avant d'ajouter un abonnement.</p>
         </div>
 
         <div class="form-row">
@@ -141,7 +144,7 @@ function handleSave() {
 
       <DialogFooter>
         <Button variant="outline" @click="$emit('update:open', false)">Annuler</Button>
-        <Button @click="handleSave" :disabled="!formName || !formAmount || !formCategory || !formStartDate">
+        <Button @click="handleSave" :disabled="!formName || !formAmount || !formCategory || !formStartDate || !formBankAccountId">
           {{ subscription ? 'Modifier' : 'Ajouter' }}
         </Button>
       </DialogFooter>
@@ -184,5 +187,12 @@ function handleSave() {
 
 .form-select:focus {
   border-color: var(--app-text);
+}
+
+.no-accounts-hint {
+  font-size: 0.8rem;
+  color: var(--app-text-muted);
+  font-style: italic;
+  margin: 0;
 }
 </style>

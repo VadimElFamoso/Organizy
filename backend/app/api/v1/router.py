@@ -7,6 +7,7 @@ from app.api.v1 import (
     daily_tasks,
     dashboard,
     payments,
+    projects,
     todos,
     usage,
     users,
@@ -23,5 +24,6 @@ api_router.include_router(usage.router, prefix="/usage", tags=["usage"])
 api_router.include_router(daily_tasks.router, prefix="/daily-tasks", tags=["daily-tasks"])
 api_router.include_router(workouts.router, prefix="/workouts", tags=["workouts"])
 api_router.include_router(todos.router, prefix="/todos", tags=["todos"])
+api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(budget.router, prefix="/budget", tags=["budget"])

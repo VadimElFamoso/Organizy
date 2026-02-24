@@ -44,9 +44,15 @@ const router = createRouter({
     },
     {
       path: '/todos',
-      name: 'todos',
-      component: () => import('@/pages/TodosPage.vue'),
-      meta: { title: 'Todos — Organizy' },
+      name: 'projects',
+      component: () => import('@/pages/ProjectsPage.vue'),
+      meta: { title: 'Projets — Organizy' },
+    },
+    {
+      path: '/todos/:id',
+      name: 'project-board',
+      component: () => import('@/pages/ProjectBoardPage.vue'),
+      meta: { title: 'Projet — Organizy' },
     },
     {
       path: '/budget',

@@ -7,6 +7,8 @@ from app.models.daily_task import DailyTask
 from app.models.daily_task_completion import DailyTaskCompletion
 from app.models.monthly_usage import MonthlyUsage
 from app.models.todo_item import TodoItem
+from app.models.todo_project import TodoProject
+from app.models.todo_project_column import TodoProjectColumn
 from app.models.user import User
 from app.models.workout import Workout
 from app.models.workout_exercise import WorkoutExercise
@@ -21,6 +23,8 @@ __all__ = [
     "DailyTaskCompletion",
     "MonthlyUsage",
     "TodoItem",
+    "TodoProject",
+    "TodoProjectColumn",
     "User",
     "UserAnalytics",
     "Workout",

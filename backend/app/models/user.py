@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from app.models.daily_task_completion import DailyTaskCompletion
     from app.models.monthly_usage import MonthlyUsage
     from app.models.todo_item import TodoItem
+    from app.models.todo_project import TodoProject
     from app.models.workout import Workout
     from app.models.workout_preset import WorkoutPreset
 
@@ -108,6 +109,10 @@ class User(Base, TimestampMixin):
         cascade="all, delete-orphan",
     )
     bank_accounts: Mapped[list[BankAccount]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    todo_projects: Mapped[list[TodoProject]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

@@ -9,16 +9,17 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { Archive, Trash2, Check } from 'lucide-vue-next'
-import type { TodoItem } from '@/services/api'
+import { Archive, Trash2, Check, RotateCcw } from 'lucide-vue-next'
+import type { TodoItem, TaskItem } from '@/services/api'
 
 const props = defineProps<{
-  todos: TodoItem[]
+  todos: (TodoItem | TaskItem)[]
 }>()
 
 const emit = defineEmits<{
   bulkDelete: [ids: string[]]
   delete: [id: string]
+  recover: [id: string]
 }>()
 
 const selectedIds = ref<Set<string>>(new Set())
@@ -50,6 +51,13 @@ function handleBulkDelete() {
   selectedIds.value = new Set()
 }
 
+function handleBulkRecover() {
+  for (const id of selectedIds.value) {
+    emit('recover', id)
+  }
+  selectedIds.value = new Set()
+}
+
 function handleDelete(id: string) {
   selectedIds.value.delete(id)
   emit('delete', id)
@@ -77,6 +85,15 @@ function handleDelete(id: string) {
           @click="toggleAll"
         >
           {{ allSelected ? 'Tout désélectionner' : 'Tout sélectionner' }}
+        </Button>
+        <Button
+          v-if="selectedIds.size > 0"
+          variant="outline"
+          size="sm"
+          @click="handleBulkRecover"
+        >
+          <RotateCcw :size="14" />
+          Récupérer ({{ selectedIds.size }})
         </Button>
         <Button
           v-if="selectedIds.size > 0"
@@ -113,7 +130,16 @@ function handleDelete(id: string) {
           <Button
             variant="ghost"
             size="sm"
-            class="item-delete"
+            class="item-action"
+            title="Récupérer"
+            @click.stop="emit('recover', todo.id)"
+          >
+            <RotateCcw :size="13" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="item-action"
             @click.stop="handleDelete(todo.id)"
           >
             <Trash2 :size="13" />
@@ -205,6 +231,8 @@ function handleDelete(id: string) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .item-date {
@@ -212,7 +240,7 @@ function handleDelete(id: string) {
   color: var(--app-text-dim);
 }
 
-.item-delete {
+.item-action {
   flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.15s;
@@ -221,7 +249,7 @@ function handleDelete(id: string) {
   color: var(--app-text-dim);
 }
 
-.archive-item:hover .item-delete {
+.archive-item:hover .item-action {
   opacity: 1;
 }
 </style>

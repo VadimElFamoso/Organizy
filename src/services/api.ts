@@ -148,7 +148,53 @@ export interface TodoItem {
   id: string
   title: string
   description?: string | null
-  priority: string
+  priority?: string | null
+  project_id?: string | null
+  column_id?: string | null
+  due_date?: string | null
+  is_done: boolean
+  done_at?: string | null
+  sort_order: number
+  created_at: string
+}
+
+// ==========================================================================
+// Project Types
+// ==========================================================================
+
+export type ProjectMethod = 'kanban' | 'eisenhower' | 'classic'
+
+export interface ProjectColumn {
+  id: string
+  name: string
+  color: string
+  sort_order: number
+  created_at: string
+}
+
+export interface TodoProject {
+  id: string
+  name: string
+  method: ProjectMethod
+  sort_order: number
+  columns: ProjectColumn[]
+  item_count: number
+  created_at: string
+}
+
+export interface TodoProjectDetail extends Omit<TodoProject, 'item_count'> {
+  items: TaskItem[]
+  done_items: TaskItem[]
+}
+
+export interface TaskItem {
+  id: string
+  project_id: string
+  column_id?: string | null
+  title: string
+  description?: string | null
+  priority?: string | null
+  due_date?: string | null
   is_done: boolean
   done_at?: string | null
   sort_order: number
@@ -243,11 +289,20 @@ export interface BudgetSummaryItem {
   upcoming_count: number
 }
 
+export interface DashboardTodoItem {
+  id: string
+  title: string
+  priority: string | null
+  due_date: string | null
+  project_id: string
+  project_name: string
+}
+
 export interface DashboardData {
   today_tasks: TodayTaskItem[]
   year_days: DayStats[]
   workout_summary: WorkoutSummary
-  top_todos: TodoItem[]
+  top_todos: DashboardTodoItem[]
   budget_summary: BudgetSummaryItem | null
 }
 
@@ -540,51 +595,108 @@ class ApiClient {
   }
 
   // ==========================================================================
-  // Todos
+  // Todos (legacy — dashboard only)
   // ==========================================================================
 
-  async getTodos(): Promise<TodoItem[]> {
-    return this.fetch<TodoItem[]>('/todos/')
+  async getTopTodos(limit = 5): Promise<TodoItem[]> {
+    return this.fetch<TodoItem[]>(`/todos/top?limit=${limit}`)
   }
 
-  async getDoneTodos(limit = 50, offset = 0): Promise<TodoItem[]> {
-    return this.fetch<TodoItem[]>(`/todos/done?limit=${limit}&offset=${offset}`)
+  // ==========================================================================
+  // Projects
+  // ==========================================================================
+
+  async getProjects(): Promise<TodoProject[]> {
+    return this.fetch<TodoProject[]>('/projects/')
   }
 
-  async createTodo(data: { title: string; description?: string; priority?: string; sort_order?: number }): Promise<TodoItem> {
-    return this.fetch<TodoItem>('/todos/', {
+  async createProject(data: { name: string; method: ProjectMethod }): Promise<TodoProject> {
+    return this.fetch<TodoProject>('/projects/', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
-  async updateTodo(id: string, data: Partial<{ title: string; description: string | null; priority: string; is_done: boolean; sort_order: number }>): Promise<TodoItem> {
-    return this.fetch<TodoItem>(`/todos/${id}`, {
+  async getProject(id: string): Promise<TodoProjectDetail> {
+    return this.fetch<TodoProjectDetail>(`/projects/${id}`)
+  }
+
+  async updateProject(id: string, data: { name?: string }): Promise<TodoProject> {
+    return this.fetch<TodoProject>(`/projects/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     })
   }
 
-  async deleteTodo(id: string): Promise<void> {
-    return this.fetch(`/todos/${id}`, { method: 'DELETE' })
+  async deleteProject(id: string): Promise<void> {
+    return this.fetch(`/projects/${id}`, { method: 'DELETE' })
   }
 
-  async bulkDeleteTodos(ids: string[]): Promise<void> {
-    return this.fetch('/todos/bulk-delete', {
+  // Project columns
+  async createProjectColumn(projectId: string, data: { name: string; color?: string }): Promise<ProjectColumn> {
+    return this.fetch<ProjectColumn>(`/projects/${projectId}/columns`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateProjectColumn(projectId: string, columnId: string, data: { name?: string; color?: string }): Promise<ProjectColumn> {
+    return this.fetch<ProjectColumn>(`/projects/${projectId}/columns/${columnId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteProjectColumn(projectId: string, columnId: string): Promise<void> {
+    return this.fetch(`/projects/${projectId}/columns/${columnId}`, { method: 'DELETE' })
+  }
+
+  async reorderProjectColumns(projectId: string, columns: { id: string; sort_order: number }[]): Promise<void> {
+    return this.fetch(`/projects/${projectId}/columns/reorder`, {
+      method: 'POST',
+      body: JSON.stringify({ columns }),
+    })
+  }
+
+  // Project tasks
+  async getProjectTasks(projectId: string): Promise<TaskItem[]> {
+    return this.fetch<TaskItem[]>(`/projects/${projectId}/tasks`)
+  }
+
+  async getProjectDoneTasks(projectId: string, limit = 50, offset = 0): Promise<TaskItem[]> {
+    return this.fetch<TaskItem[]>(`/projects/${projectId}/tasks/done?limit=${limit}&offset=${offset}`)
+  }
+
+  async createProjectTask(projectId: string, data: { title: string; description?: string; column_id?: string; priority?: string; due_date?: string; sort_order?: number }): Promise<TaskItem> {
+    return this.fetch<TaskItem>(`/projects/${projectId}/tasks`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateProjectTask(projectId: string, taskId: string, data: Partial<{ title: string; description: string | null; column_id: string | null; priority: string | null; due_date: string | null; is_done: boolean; sort_order: number }>): Promise<TaskItem> {
+    return this.fetch<TaskItem>(`/projects/${projectId}/tasks/${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteProjectTask(projectId: string, taskId: string): Promise<void> {
+    return this.fetch(`/projects/${projectId}/tasks/${taskId}`, { method: 'DELETE' })
+  }
+
+  async bulkDeleteProjectTasks(projectId: string, ids: string[]): Promise<void> {
+    return this.fetch(`/projects/${projectId}/tasks/bulk-delete`, {
       method: 'POST',
       body: JSON.stringify({ ids }),
     })
   }
 
-  async reorderTodos(items: { id: string; priority: string; sort_order: number }[]): Promise<void> {
-    return this.fetch('/todos/reorder', {
+  async reorderProjectTasks(projectId: string, items: { id: string; column_id?: string | null; sort_order: number }[]): Promise<void> {
+    return this.fetch(`/projects/${projectId}/tasks/reorder`, {
       method: 'POST',
       body: JSON.stringify({ items }),
     })
-  }
-
-  async getTopTodos(limit = 5): Promise<TodoItem[]> {
-    return this.fetch<TodoItem[]>(`/todos/top?limit=${limit}`)
   }
 
   // ==========================================================================

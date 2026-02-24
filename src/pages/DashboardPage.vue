@@ -66,25 +66,25 @@ async function handleLogout() {
         </div>
 
         <div class="dashboard-grid">
-          <div class="left-column">
-            <div class="year-column-card">
-              <h3 class="year-title">Progression annuelle</h3>
-              <DotYearCalendar :year="new Date().getFullYear()" />
-            </div>
-          </div>
-          <div class="right-column">
+          <div class="widgets-column">
             <TodayTasks
               :tasks="dashboard.today_tasks"
               class="cell-tasks"
               @toggle="handleToggleTask"
             />
+            <TopTodos :todos="dashboard.top_todos" class="cell-todos" />
             <WorkoutSummaryCard :summary="dashboard.workout_summary" class="cell-sport" />
-            <TopTodos :todos="dashboard.top_todos" class="cell-kanban" />
             <BudgetSummary
               v-if="isPro && dashboard.budget_summary"
               :summary="dashboard.budget_summary"
               class="cell-budget"
             />
+          </div>
+          <div class="year-column">
+            <div class="year-card">
+              <h3 class="year-title">Progression annuelle</h3>
+              <DotYearCalendar :year="new Date().getFullYear()" />
+            </div>
           </div>
         </div>
       </template>
@@ -126,6 +126,8 @@ async function handleLogout() {
   align-items: baseline;
   justify-content: space-between;
   margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .page-title {
@@ -141,24 +143,53 @@ async function handleLogout() {
   color: var(--app-text);
 }
 
+/* 2x2 widgets (2/3) + year calendar (1/3) */
 .dashboard-grid {
   display: flex;
-  gap: 24px;
+  gap: 20px;
 }
 
-.left-column {
+.widgets-column {
+  flex: 2;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(220px, auto) minmax(180px, auto);
+  gap: 20px;
+}
+
+.cell-tasks {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.cell-todos {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.cell-sport {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.cell-budget {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.year-column {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  flex-shrink: 0;
-  width: 358px;
 }
 
-.year-column-card {
+.year-card {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 12px;
-  padding: 24px 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -175,65 +206,47 @@ async function handleLogout() {
   white-space: nowrap;
 }
 
-.right-column {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 24px;
-  min-width: 0;
-}
-
-.cell-tasks {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.cell-kanban {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-.cell-sport {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.cell-budget {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-@media (max-width: 768px) {
+/* Medium screens: year goes full-width below */
+@media (max-width: 1100px) {
   .dashboard-grid {
     flex-direction: column;
   }
 
-  .left-column {
+  .year-column {
     width: 100%;
   }
 
-  .year-column-card {
-    flex-direction: row;
+  .year-card {
     overflow-x: auto;
-    gap: 12px;
+  }
+}
+
+/* Small screens: single column stack */
+@media (max-width: 700px) {
+  .content {
+    padding: 24px 16px;
   }
 
-  .right-column {
+  .widgets-column {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
   }
 
   .cell-tasks,
-  .cell-kanban,
   .cell-sport,
+  .cell-todos,
   .cell-budget {
     grid-column: 1;
     grid-row: auto;
   }
 
-  .content {
-    padding: 24px 16px;
+  .page-header {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .current-date {
+    font-size: 0.9rem;
   }
 }
 </style>

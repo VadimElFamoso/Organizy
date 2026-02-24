@@ -14,6 +14,7 @@ from app.models.budget_transaction import BudgetTransaction
 from app.models.daily_task import DailyTask
 from app.models.daily_task_completion import DailyTaskCompletion
 from app.models.todo_item import TodoItem
+from app.models.todo_project import TodoProject
 from app.models.user import SubscriptionPlan, User
 from app.models.workout import Workout
 from app.schemas.daily_task import DailyTaskResponse, CompletionResponse
@@ -40,11 +41,20 @@ class BudgetSummaryItem(BaseModel):
     upcoming_count: int
 
 
+class DashboardTodoItem(BaseModel):
+    id: str
+    title: str
+    priority: str | None = None
+    due_date: date | None = None
+    project_id: str
+    project_name: str
+
+
 class DashboardResponse(BaseModel):
     today_tasks: list[TodayTaskItem]
     year_days: list[dict]  # Simplified year stats
     workout_summary: WorkoutSummary
-    top_todos: list[TodoResponse]
+    top_todos: list[DashboardTodoItem]
     budget_summary: BudgetSummaryItem | None = None
 
 
@@ -104,9 +114,11 @@ async def get_dashboard(
         ),
         # Workout summary data
         _get_workout_summary(db, current_user),
-        # Top todos
+        # Top todos (with project name)
         db.execute(
             select(TodoItem)
+            .join(TodoProject, TodoItem.project_id == TodoProject.id)
+            .options(selectinload(TodoItem.project))
             .where(
                 TodoItem.user_id == current_user.id,
                 TodoItem.is_done == False,  # noqa: E712
@@ -119,6 +131,7 @@ async def get_dashboard(
                     (TodoItem.priority == "low", 3),
                     else_=4,
                 ),
+                TodoItem.due_date.asc().nullslast(),
                 TodoItem.sort_order,
                 TodoItem.created_at.desc(),
             )
@@ -153,7 +166,18 @@ async def get_dashboard(
             current += timedelta(days=1)
 
     # Process top todos
-    top_todos = top_todos_result.scalars().all()
+    top_todos_raw = top_todos_result.scalars().unique().all()
+    top_todos = [
+        DashboardTodoItem(
+            id=str(t.id),
+            title=t.title,
+            priority=t.priority,
+            due_date=t.due_date,
+            project_id=str(t.project_id),
+            project_name=t.project.name if t.project else "—",
+        )
+        for t in top_todos_raw
+    ]
 
     # Budget summary for Pro users
     budget_summary = None
