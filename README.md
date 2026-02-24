@@ -1,85 +1,85 @@
-# Organizy
+Organizy
+Appli fer s’organizâ en perso et suivâ la régularité. In compagnon d’Skillzy po fé des habitudes et rester à jour dins ses affaires.
 
-Personal organization & regularity tracking app. A companion to [Skillzy](https://skillzy.app) for building habits and staying on top of things.
+Fonctionnalités
+Tâches journalières — Définî des tâch’ qui r’viennent, suivâ ç’qu’a sté fait, et veyî la régularité avô des graphiques en ligne et des tablôs hebdomadaires.
 
-## Features
+Calendrié à p’tits points d’l’année — Veyî tote l’année d’in cop d’œil avô des points d’ratio d’accomplissement (à la façon GitHub).
 
-- **Daily Tasks** — Define recurring tasks, track completions, view consistency with line charts and weekly tables
-- **Year Dot Calendar** — Visualize your entire year at a glance with completion ratio dots (GitHub-style)
-- **Workout Tracking** — Log workouts with type, duration, and notes. Track streaks and view activity on a calendar
-- **Kanban Todos** — Organize tasks by priority (Urgent/High/Medium/Low) with drag-and-drop boards
-- **Dashboard** — Aggregated overview of today's tasks, year calendar, workout summary, and top todos
-- **Google OAuth** — Sign in with Google, secure httpOnly cookie sessions
-- **Stripe Payments** — Subscriptions, trials, and billing portal (optional, no features gated)
+Suivi d’entrainement — Notâ les séances avô l’tipe, la durée et des notes. Suivâ les séries (streaks) et veyî l’activité su in calendrié.
 
-## Tech Stack
+Kanban Todos — Organisâ les tâches selon la priorité (Urgent/Haut/Moyen/Bas) avô des tablôs qu’on peut trîmbalâ (drag & drop).
 
-### Frontend
-- Vue 3 + TypeScript + Vite
-- TailwindCSS + shadcn-vue
-- vue-draggable-plus (kanban drag & drop)
-- chart.js + vue-chartjs (regularity graphs)
+Tableau d’bord — Vue d’ensemb’ d’ârdjoû : tâches du djoû, calendrié d’l’année, résumé des entrainements et tâches principales.
 
-### Backend
-- FastAPI + SQLAlchemy 2.0 (async)
-- PostgreSQL + Alembic migrations
-- Google OAuth + JWT sessions
-- Stripe SDK
+Google OAuth — S’connectâ avô Google, sessions sécurisées avô cookies httpOnly.
 
-### Infrastructure
-- Docker & Docker Compose
-- Traefik (reverse proxy, auto SSL)
+Paiements Stripe — Abonnements, périodes d’essai et portail d’facturation (optionnel, gn’a rin d’bloqué dins les fonctions).
 
-## Quick Start
+Pile technologique
 
-```bash
-# Install CLI dependencies
+Frontend
+Vue 3 + TypeScript + Vite
+TailwindCSS + shadcn-vue
+vue-draggable-plus (kanban drag & drop)
+chart.js + vue-chartjs (graphiques d’régularité)
+
+Backend
+FastAPI + SQLAlchemy 2.0 (async)
+PostgreSQL + migrations Alembic
+Google OAuth + sessions JWT
+Stripe SDK
+
+Infrastructure
+Docker & Docker Compose
+Traefik (reverse proxy, SSL automatique)
+
+Démarrage rapide
+
+# Installâ les dépendances CLI
+
 uv sync
 
-# Run setup wizard (generates .env)
+# Lanci l’assistant d’configuration (créé l’fichié .env)
+
 uv run launchpad init
 
-# Start development
+# Démarrâ l’développement
+
 uv run launchpad dev
-```
 
-Visit http://localhost:5173
+Allâ su [http://localhost:5173](http://localhost:5173)
 
-## CLI Commands
+Commandes CLI
 
-```bash
-uv run launchpad dev          # Start local docker-compose
-uv run launchpad dev vps      # Start dev on VPS
-uv run launchpad prod         # Start production
-uv run launchpad down         # Stop all containers
-uv run launchpad logs         # Tail logs
-uv run launchpad db migrate   # Run alembic migrations
-uv run launchpad db reset     # Reset database
-uv run launchpad db shell     # Open psql shell
-```
+uv run launchpad dev          # Démarrâ docker-compose en local
+uv run launchpad dev vps      # Démarrâ en dev su VPS
+uv run launchpad prod         # Démarrâ en production
+uv run launchpad down         # Arrêtâ tos les conteneurs
+uv run launchpad logs         # Veyî les logs en direct
+uv run launchpad db migrate   # Lanci les migrations alembic
+uv run launchpad db reset     # Remettre à zéro la base
+uv run launchpad db shell     # Ovrî la console psql
 
-## Project Structure
+Structure du projèt
 
-```
 organizy/
-├── backend/              # FastAPI backend
+├── backend/              # Backend FastAPI
 │   ├── app/
-│   │   ├── api/v1/       # API routes (auth, daily-tasks, workouts, todos, dashboard)
-│   │   ├── models/       # SQLAlchemy models
-│   │   ├── schemas/      # Pydantic schemas
-│   │   ├── services/     # Business logic
-│   │   └── core/         # Auth, middleware, database
-│   └── alembic/          # Database migrations
-├── src/                  # Vue 3 frontend
-│   ├── components/       # UI + feature components
-│   ├── composables/      # Vue composables (state management)
-│   ├── pages/            # Page components
-│   ├── services/         # API client
-│   └── router/           # Vue Router
-├── cli/                  # CLI tool
-└── docker-compose.yml    # Local development
-```
+│   │   ├── api/v1/       # Routes API (auth, daily-tasks, workouts, todos, dashboard)
+│   │   ├── models/       # Modèles SQLAlchemy
+│   │   ├── schemas/      # Schémas Pydantic
+│   │   ├── services/     # Logique métier
+│   │   └── core/         # Auth, middleware, base de données
+│   └── alembic/          # Migrations base de données
+├── src/                  # Frontend Vue 3
+│   ├── components/       # Composants UI + fonctions
+│   ├── composables/      # Composables Vue (gestion d’état)
+│   ├── pages/            # Pages
+│   ├── services/         # Client API
+│   └── router/           # Routeur Vue
+├── cli/                  # Outil CLI
+└── docker-compose.yml    # Développement local
 
-## License
-
+Licence
 MIT
