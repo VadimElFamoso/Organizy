@@ -133,7 +133,7 @@ async function handleLogout() {
 
 @media (max-width: 768px) {
   .content {
-    padding: 24px 16px;
+    padding: 24px 16px 88px;
   }
 }
 </style>

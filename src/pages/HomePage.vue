@@ -1120,6 +1120,16 @@ function handleCta() {
 }
 
 /* ── Responsive ── */
+@media (max-width: 1100px) {
+  .nav { padding: 12px 24px; }
+  .hero { padding: 72px 24px 80px; }
+  .features { padding: 80px 24px; }
+  .how { padding: 80px 24px; }
+  .trust-bar { padding: 28px 24px; }
+  .bottom-cta { padding: 48px 24px 80px; }
+  .footer { padding: 28px 24px; }
+}
+
 @media (max-width: 900px) {
   .hero {
     padding: 56px 24px 64px;
@@ -1174,11 +1184,31 @@ function handleCta() {
     gap: 8px;
     text-align: center;
   }
+
+  .section-header { margin-bottom: 40px; }
 }
 
 @media (max-width: 480px) {
+  .nav { padding: 12px 16px; }
+  .hero { padding: 36px 16px 44px; }
   .hero-inner h1 { font-size: 2rem; }
+  .hero-sub { font-size: 0.95rem; }
   .section-header h2 { font-size: 2rem; }
+  .section-header p { font-size: 0.95rem; }
   .fp-dashboard { grid-template-columns: 1fr; }
+  .feat-icon-wrap { width: 40px; height: 40px; border-radius: 10px; }
+  .feat-content h3 { font-size: 1.35rem; }
+  .feat-content p { font-size: 0.95rem; }
+  .features { padding: 56px 16px; }
+  .how { padding: 56px 16px; }
+  .bottom-cta { padding: 32px 16px 56px; }
+  .bottom-card { padding: 36px 20px; border-radius: 16px; }
+  .bottom-card h2 { font-size: 1.5rem; }
+  .bottom-card p { font-size: 0.92rem; }
+  .trust-bar { padding: 24px 16px; }
+  .trust-bar p { font-size: 0.92rem; }
+  .footer { padding: 24px 16px; }
+  .step { padding: 0 16px; }
+  .step-num { width: 40px; height: 40px; font-size: 1rem; }
 }
 </style>

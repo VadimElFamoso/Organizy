@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   DropdownMenu,
@@ -10,9 +9,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   LogOut,
-  User,
-  Menu,
-  X,
   Settings,
   ChevronLeft,
   CalendarCheck,
@@ -43,8 +39,6 @@ const emit = defineEmits<{
 const router = useRouter()
 const route = useRoute()
 
-const mobileMenuOpen = ref(false)
-
 function handleBack() {
   emit('back')
 }
@@ -57,11 +51,6 @@ function goToSettings() {
   router.push('/settings')
 }
 
-function handleMobileAction(action: () => void) {
-  action()
-  mobileMenuOpen.value = false
-}
-
 const navLinks = [
   { to: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
   { to: '/daily-tasks', label: 'Tâches quotidiennes', icon: CalendarCheck },
@@ -70,8 +59,17 @@ const navLinks = [
   { to: '/budget', label: 'Budget', icon: Wallet },
 ]
 
+const bottomNavLinks = [
+  { to: '/dashboard', label: 'Accueil', icon: LayoutDashboard },
+  { to: '/daily-tasks', label: 'Tâches', icon: CalendarCheck },
+  { to: '/workouts', label: 'Sport', icon: Dumbbell },
+  { to: '/todos', label: 'Projets', icon: ListTodo },
+  { to: '/budget', label: 'Budget', icon: Wallet },
+]
+
 function isActive(path: string) {
-  return route.path === path
+  if (path === '/dashboard') return route.path === '/dashboard'
+  return route.path.startsWith(path)
 }
 </script>
 
@@ -112,10 +110,10 @@ function isActive(path: string) {
     <!-- Right section -->
     <div class="navbar-right">
       <template v-if="user">
-        <!-- User dropdown (desktop) -->
+        <!-- User dropdown -->
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <button class="user-menu-trigger desktop-only">
+            <button class="user-menu-trigger">
               <img v-if="user?.picture" :src="user.picture" :alt="user?.name" class="app-navbar-user-avatar" />
               <div v-else class="user-avatar-placeholder">
                 {{ user?.name?.charAt(0) || '?' }}
@@ -143,57 +141,22 @@ function isActive(path: string) {
           </DropdownMenuContent>
         </DropdownMenu>
       </template>
-
-      <!-- Mobile menu toggle -->
-      <button class="mobile-menu-btn mobile-only" @click="mobileMenuOpen = !mobileMenuOpen">
-        <X v-if="mobileMenuOpen" :size="24" />
-        <Menu v-else :size="24" />
-      </button>
     </div>
-
-    <!-- Mobile menu overlay -->
-    <Transition name="mobile-menu">
-      <div v-if="mobileMenuOpen" class="mobile-menu">
-        <!-- Navigation -->
-        <div class="mobile-menu-section">
-          <span class="mobile-section-label">Navigation</span>
-          <RouterLink
-            v-for="link in navLinks"
-            :key="link.to"
-            :to="link.to"
-            class="mobile-menu-item"
-            :class="{ 'mobile-active': isActive(link.to) }"
-            @click="mobileMenuOpen = false"
-          >
-            <component :is="link.icon" :size="18" />
-            <span>{{ link.label }}</span>
-          </RouterLink>
-        </div>
-
-        <!-- Auth section (mobile) -->
-        <div class="mobile-menu-section mobile-auth-section">
-          <template v-if="user">
-            <div class="mobile-user-info">
-              <img v-if="user.picture" :src="user.picture" :alt="user.name" class="mobile-user-avatar" />
-              <User v-else :size="20" class="mobile-user-icon" />
-              <div class="mobile-user-details">
-                <span class="mobile-user-name">{{ user.name }}</span>
-                <span class="mobile-user-email">{{ user.email }}</span>
-              </div>
-            </div>
-            <RouterLink to="/settings" class="mobile-menu-item" @click="mobileMenuOpen = false">
-              <Settings :size="18" />
-              <span>Paramètres du compte</span>
-            </RouterLink>
-            <button class="mobile-menu-item mobile-logout" @click="handleMobileAction(() => emit('logout'))">
-              <LogOut :size="18" />
-              <span>Déconnexion</span>
-            </button>
-          </template>
-        </div>
-      </div>
-    </Transition>
   </header>
+
+  <!-- Bottom navigation (mobile) -->
+  <nav class="bottom-nav">
+    <RouterLink
+      v-for="link in bottomNavLinks"
+      :key="link.to"
+      :to="link.to"
+      class="bottom-nav-item"
+      :class="{ active: isActive(link.to) }"
+    >
+      <component :is="link.icon" :size="20" />
+      <span>{{ link.label }}</span>
+    </RouterLink>
+  </nav>
 </template>
 
 <style scoped>
@@ -318,161 +281,12 @@ function isActive(path: string) {
   background: var(--app-surface-3);
 }
 
-/* Mobile menu button */
-.mobile-menu-btn {
+/* Bottom navigation */
+.bottom-nav {
   display: none;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: var(--app-text);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.mobile-menu-btn:hover {
-  background: var(--app-surface-3);
-}
-
-/* Mobile menu overlay */
-.mobile-menu {
-  position: absolute;
-  top: 60px;
-  left: 0;
-  right: 0;
-  background: var(--app-surface);
-  border-bottom: 1px solid var(--app-border);
-  z-index: 1000;
-  max-height: calc(100vh - 60px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  padding-bottom: env(safe-area-inset-bottom, 16px);
-}
-
-.mobile-menu-section {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--app-border);
-  overflow: hidden;
-}
-
-.mobile-section-label {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--app-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0 16px 8px;
-}
-
-.mobile-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 16px;
-  min-height: 52px;
-  background: transparent;
-  border: none;
-  color: var(--app-text);
-  font-size: 0.95rem;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s;
-  text-decoration: none;
-}
-
-.mobile-menu-item:hover {
-  background: var(--app-surface-2);
-}
-
-.mobile-menu-item.mobile-active {
-  background: var(--app-surface-2);
-  font-weight: 600;
-}
-
-.mobile-menu-item svg {
-  color: var(--app-text-muted);
-  flex-shrink: 0;
-}
-
-.mobile-auth-section {
-  border-bottom: none;
-  padding-bottom: 16px;
-}
-
-.mobile-user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--app-surface-2);
-  margin: 0 12px 8px;
-  border-radius: 8px;
-}
-
-.mobile-user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.mobile-user-icon {
-  width: 40px;
-  height: 40px;
-  padding: 10px;
-  background: var(--app-surface-3);
-  border-radius: 50%;
-  color: var(--app-text-muted);
-}
-
-.mobile-user-details {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.mobile-user-name {
-  font-weight: 500;
-  color: var(--app-text);
-}
-
-.mobile-user-email {
-  font-size: 0.8rem;
-  color: var(--app-text-dim);
-}
-
-.mobile-logout {
-  color: #ef4444;
-}
-
-.mobile-logout svg {
-  color: #ef4444;
-}
-
-/* Mobile menu animation */
-.mobile-menu-enter-active,
-.mobile-menu-leave-active {
-  transition: all 0.2s ease;
-}
-
-.mobile-menu-enter-from,
-.mobile-menu-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 
 /* Responsive visibility */
-.mobile-only {
-  display: none;
-}
-
 .desktop-only {
   display: flex;
 }
@@ -483,20 +297,53 @@ function isActive(path: string) {
     display: none !important;
   }
 
-  .mobile-only {
-    display: flex !important;
-  }
-
-  .mobile-menu-btn {
-    display: flex !important;
-  }
-
   .logo-text {
     display: none;
   }
 
   .nav-links {
     display: none;
+  }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 1000;
+    background: var(--app-surface);
+    border-top: 1px solid var(--app-border);
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 0;
+    flex: 1;
+    text-decoration: none;
+    color: var(--app-text-dim);
+    transition: color 0.15s;
+  }
+
+  .bottom-nav-item span {
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .bottom-nav-item.active {
+    color: var(--app-text);
+  }
+
+  .bottom-nav-item.active span {
+    font-weight: 700;
   }
 }
 </style>

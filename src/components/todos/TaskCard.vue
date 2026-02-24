@@ -123,4 +123,18 @@ function formatDate(dateStr: string) {
 .task-card:hover .delete-btn {
   opacity: 1;
 }
+
+@media (max-width: 480px) {
+  .task-card {
+    padding: 6px 8px;
+  }
+
+  .card-title {
+    font-size: 0.78rem;
+  }
+
+  .due-date {
+    font-size: 0.62rem;
+  }
+}
 </style>

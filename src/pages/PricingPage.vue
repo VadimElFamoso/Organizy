@@ -598,6 +598,13 @@ function handleCta() {
 }
 
 /* ── Responsive ── */
+@media (max-width: 1100px) {
+  .nav { padding: 12px 24px; }
+  .plans { padding: 0 24px 64px; }
+  .plans-grid { gap: 20px; }
+  .plan-card { max-width: 340px; }
+}
+
 @media (max-width: 768px) {
   .nav { padding: 12px 20px; }
   .nav-center { display: none; }
@@ -611,7 +618,8 @@ function handleCta() {
     align-items: center;
   }
 
-  .plan-card.featured { order: -1; }
+  .plan-card { max-width: 100%; }
+  .plan-card.featured { order: -1; transform: none; }
 
   .faq { padding: 48px 20px; }
   .faq-grid { grid-template-columns: 1fr; }
@@ -621,6 +629,19 @@ function handleCta() {
     gap: 12px;
     text-align: center;
   }
+}
 
+@media (max-width: 480px) {
+  .hero { padding: 36px 16px 28px; }
+  .hero h1 { font-size: 1.4rem; }
+  .hero-sub { font-size: 0.92rem; }
+  .billing-toggle button { padding: 6px 14px; font-size: 0.8rem; }
+  .save-badge { font-size: 0.65rem; padding: 2px 5px; }
+  .plans { padding: 0 16px 40px; }
+  .plan-card { padding: 24px; }
+  .amount { font-size: 2.2rem; }
+  .faq { padding: 40px 16px; }
+  .faq-item { padding: 18px; }
+  .footer { padding: 32px 16px; }
 }
 </style>

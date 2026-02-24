@@ -296,12 +296,31 @@ async function handleLogout() {
 
 @media (max-width: 768px) {
   .content {
-    padding: 24px 16px;
+    padding: 24px 16px 88px;
   }
 
   .page-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .name-input {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px 88px;
+  }
+
+  .page-header {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .header-left h1 {
+    font-size: 1.35rem;
   }
 }
 </style>

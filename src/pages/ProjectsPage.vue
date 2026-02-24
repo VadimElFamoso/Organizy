@@ -229,11 +229,31 @@ async function handleLogout() {
 
 @media (max-width: 768px) {
   .content {
-    padding: 24px 16px;
+    padding: 24px 16px 88px;
   }
 
   .projects-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px 88px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .page-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .project-card {
+    padding: 16px;
   }
 }
 </style>

@@ -162,6 +162,13 @@ function handleColumnDnD(newOrder: ProjectColumn[]) {
 @media (max-width: 768px) {
   .kanban-wrapper {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kanban-wrapper {
+    gap: 8px;
   }
 }
 </style>

@@ -470,7 +470,36 @@ function formatDate(dateString?: string) {
 
 @media (max-width: 768px) {
   .content {
-    padding: 32px 16px;
+    padding: 32px 16px 88px;
+  }
+
+  .subscription-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 24px 12px 88px;
+  }
+
+  .profile-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-details {
+    text-align: center;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .settings-content h1 {
+    font-size: 1.4rem;
   }
 }
 </style>

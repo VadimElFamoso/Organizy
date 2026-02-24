@@ -1224,7 +1224,7 @@ async function handleLogout() {
   }
 
   .content {
-    padding: 24px 16px;
+    padding: 24px 16px 88px;
   }
 
   .form-row {
@@ -1234,6 +1234,40 @@ async function handleLogout() {
 
   .exercise-inputs {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px 88px;
+  }
+
+  .page-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .summary-stat {
+    padding: 12px 14px;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .preset-name-input {
+    max-width: 100%;
+  }
+
+  .date-detail {
+    padding: 12px 14px;
+  }
+
+  .history-panel {
+    padding: 14px;
+  }
+
+  .presets-panel {
+    padding: 12px 14px;
   }
 }
 </style>

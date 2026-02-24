@@ -249,4 +249,28 @@ async function handleLogout() {
     font-size: 0.9rem;
   }
 }
+
+@media (max-width: 768px) {
+  .content {
+    padding-bottom: 88px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px 88px;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .current-date {
+    font-size: 0.82rem;
+  }
+
+  .year-card {
+    padding: 14px;
+  }
+}
 </style>

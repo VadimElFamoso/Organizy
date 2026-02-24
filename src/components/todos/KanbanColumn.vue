@@ -230,4 +230,15 @@ function onUpdate(items: TaskItem[]) {
 .ghost {
   opacity: 0.4;
 }
+
+@media (max-width: 480px) {
+  .kanban-column {
+    padding: 10px;
+  }
+
+  .column-header {
+    padding: 0 2px 8px;
+    margin-bottom: 8px;
+  }
+}
 </style>

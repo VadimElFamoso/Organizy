@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Pencil } from 'lucide-vue-next'
 import EisenhowerQuadrant from './EisenhowerQuadrant.vue'
@@ -18,6 +18,16 @@ const emit = defineEmits<{
   updateColumn: [columnId: string, data: { name?: string; color?: string }]
   openDetail: [task: TaskItem]
 }>()
+
+// Track mobile breakpoint to show quadrant titles when axis labels are hidden
+const isMobile = ref(window.innerWidth <= 768)
+
+function onResize() {
+  isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 // Editing state for axis labels
 const editingLabel = ref<number | null>(null)
@@ -127,7 +137,7 @@ function handleQuadrantUpdate(columnId: string, items: TaskItem[]) {
       :column-id="columns[0].id"
       :color="columns[0].color"
       :items="itemsByColumn[columns[0].id] || []"
-      :show-title="false"
+      :show-title="isMobile"
       @update:items="handleQuadrantUpdate(columns[0].id, $event)"
       @toggle="emit('toggle', $event)"
       @delete="emit('delete', $event)"
@@ -140,7 +150,7 @@ function handleQuadrantUpdate(columnId: string, items: TaskItem[]) {
       :column-id="columns[1].id"
       :color="columns[1].color"
       :items="itemsByColumn[columns[1].id] || []"
-      :show-title="false"
+      :show-title="isMobile"
       @update:items="handleQuadrantUpdate(columns[1].id, $event)"
       @toggle="emit('toggle', $event)"
       @delete="emit('delete', $event)"
@@ -178,7 +188,7 @@ function handleQuadrantUpdate(columnId: string, items: TaskItem[]) {
       :column-id="columns[2].id"
       :color="columns[2].color"
       :items="itemsByColumn[columns[2].id] || []"
-      :show-title="false"
+      :show-title="isMobile"
       @update:items="handleQuadrantUpdate(columns[2].id, $event)"
       @toggle="emit('toggle', $event)"
       @delete="emit('delete', $event)"
@@ -191,7 +201,7 @@ function handleQuadrantUpdate(columnId: string, items: TaskItem[]) {
       :column-id="columns[3].id"
       :color="columns[3].color"
       :items="itemsByColumn[columns[3].id] || []"
-      :show-title="false"
+      :show-title="isMobile"
       @update:items="handleQuadrantUpdate(columns[3].id, $event)"
       @toggle="emit('toggle', $event)"
       @delete="emit('delete', $event)"
@@ -278,6 +288,10 @@ function handleQuadrantUpdate(columnId: string, items: TaskItem[]) {
   transform: none;
 }
 
+.row-label .label-edit {
+  transform: rotate(180deg);
+}
+
 .label-input {
   max-width: 160px;
   font-size: 0.72rem;
@@ -287,12 +301,19 @@ function handleQuadrantUpdate(columnId: string, items: TaskItem[]) {
   .eisenhower-table {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
+    gap: 12px;
   }
 
   .corner-cell,
   .col-label,
   .row-label {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .eisenhower-table {
+    gap: 8px;
   }
 }
 </style>

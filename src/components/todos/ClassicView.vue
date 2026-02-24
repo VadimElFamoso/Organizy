@@ -150,4 +150,20 @@ function toggleSort(field: SortField) {
   flex-direction: column;
   gap: 4px;
 }
+
+@media (max-width: 768px) {
+  .sort-bar {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .classic-view {
+    max-width: 100%;
+  }
+
+  .sort-btn {
+    font-size: 0.72rem;
+  }
+}
 </style>

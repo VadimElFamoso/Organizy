@@ -523,7 +523,7 @@ async function handleLogout() {
 
 @media (max-width: 768px) {
   .content {
-    padding: 24px 16px;
+    padding: 24px 16px 88px;
   }
 
   .page-header {
@@ -552,12 +552,49 @@ async function handleLogout() {
 
   .tabs {
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .tab {
     flex: 1;
     text-align: center;
     padding: 8px 12px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px 88px;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .period-btn {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+  }
+
+  .period-label {
+    min-width: 110px;
+    font-size: 0.78rem;
+  }
+
+  .nav-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .tab {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .tabs {
+    padding: 2px;
   }
 }
 </style>

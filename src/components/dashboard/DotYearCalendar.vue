@@ -98,4 +98,10 @@ function formatDate(date: string): string {
   font-size: 0.75rem;
   color: var(--app-text-muted);
 }
+
+@media (max-width: 480px) {
+  .year-dots {
+    grid-template-columns: repeat(auto-fill, 14px);
+  }
+}
 </style>

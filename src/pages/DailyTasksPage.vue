@@ -586,7 +586,52 @@ async function handleLogout() {
 
 @media (max-width: 768px) {
   .content {
-    padding: 24px 16px;
+    padding: 24px 16px 88px;
+  }
+
+  .graph-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .period-switcher {
+    align-self: center;
+  }
+
+  .period-label {
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 12px 88px;
+  }
+
+  .page-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .period-btn {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+  }
+
+  .period-label {
+    font-size: 0.78rem;
+    min-width: 120px;
+  }
+
+  .regularity-section {
+    padding: 16px 12px;
+  }
+
+  .task-row {
+    padding: 10px 12px;
+  }
+
+  .task-name {
+    font-size: 0.82rem;
   }
 }
 </style>
